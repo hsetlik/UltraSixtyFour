@@ -61,6 +61,11 @@ private:
 
     Adafruit_SSD1306 display;
 
+// functions
+    void setStepPixel(byte idx, uint32_t color);
+    void setPagePixel(byte idx, uint32_t color);
+    void setTrackPixel(byte idx, uint32_t color);
+
    
 
 public:
