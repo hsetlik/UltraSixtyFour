@@ -4,22 +4,7 @@ Sequencer::Sequencer() :
 pixels(24, PIXEL_PIN, NEO_RGB + NEO_KHZ800),
 dac1(DAC1),
 dac2(DAC2),
-display(SCREEN_WIDTH, SCREEN_HEIGHT),
-groupA(BUTTONS1, 6),
-encAButton(0, 1), //NOTE: measure actual mean voltage readings
-encBButton(1, 1),
-encCButton(2, 1),
-encDButton(3, 1),
-pgLeft(4, 1),
-pgRight(5, 1),
-groupB(BUTTONS2, 7),
-trk1Button(0, 1),
-trk2Button(1, 1),
-trk3Button(2, 1),
-trk4Button(3, 1),
-leftButton(4, 1),
-rightButton(5, 1),
-playButton(6, 1)
+display(SCREEN_WIDTH, SCREEN_HEIGHT)
 {
     pixels.begin();
     pixels.setBrightness(40);
@@ -71,3 +56,11 @@ void Sequencer::loop()
     }
 
 }
+    void Sequencer::buttonPressed(uint8_t id)
+    {
+
+    }
+    void Sequencer::encoderTurned(uint8_t id, bool dir)
+    {
+        
+    }

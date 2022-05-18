@@ -17,8 +17,6 @@
 #define DDATA 25
 #define DCLK 26
 
-
-
 //Analog Button pins
 #define BUTTONS1 27
 #define BUTTONS2 14
@@ -42,6 +40,7 @@
 #define GATE2 4
 #define GATE3 2
 #define GATE4 15
+
 //NeoPixels data line
 #define PIXEL_PIN 19
 
@@ -62,32 +61,15 @@ private:
 
     Adafruit_SSD1306 display;
 
-    AnalogButtonGroup groupA;
-
-    AnalogButton encAButton;
-    AnalogButton encBButton;
-    AnalogButton encCButton;
-    AnalogButton encDButton;
-
-    AnalogButton pgLeft;
-    AnalogButton pgRight;
-
-    AnalogButtonGroup groupB;
-
-    AnalogButton trk1Button;
-    AnalogButton trk2Button;
-    AnalogButton trk3Button;
-    AnalogButton trk4Button;
-
-    AnalogButton leftButton;
-    AnalogButton rightButton;
-    AnalogButton playButton;
+   
 
 public:
     Sequencer();
     void setup();
     void loop();
-
+    void buttonPressed(uint8_t id);
+    void buttonHeld(uint8_t id);
+    void encoderTurned(uint8_t id, bool dir);
 };
 
 #endif // !SEQUENCER_H
