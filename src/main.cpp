@@ -1,6 +1,10 @@
 #include <Arduino.h>
 #include "Sequencer.h"
 #include <Encoder.h>
+#include <WiFi.h>
+#include <AsyncElegantOTA.h>
+#include <AsyncTCP.h>
+#include <ESPAsyncWebServer.h>
 
 Sequencer seq;
 
@@ -62,6 +66,10 @@ void pollEncoders()
 
 
 //====================================
+const char* ssid = "SD Airport";
+const char* password = "plinsky1737";
+
+AsyncWebServer server(80);
 
 
 
@@ -69,9 +77,6 @@ void pollEncoders()
 void setup() 
 {
   Serial.begin(9600);
-  pinMode(BUTTONS1, INPUT);
-  pinMode(BUTTONS2, INPUT);
-  //seq.setup();
   for (uint8_t i = 0; i < 6; ++i)
   {
     aButtons[i]->onPress(handlePress)
@@ -86,20 +91,45 @@ void setup()
   }
   Serial.println("buttons set up");
   // put your setup code here, to run once:
+    WiFi.mode(WIFI_STA);
+  auto res = WiFi.begin(ssid, password);
+  if (res == WL_CONNECT_FAILED)
+  {
+    //OledLog::writeLn("Connection failed");
+  } else if (res == WL_NO_SSID_AVAIL)
+  {
+    //OledLog::writeLn("Network " + ssid + " not available");
+  }
+  Serial.println(res);
+  // Wait for connection
+  while (WiFi.status() != WL_CONNECTED) 
+  {
+    delay(500);
+    Serial.print(".");
+  }
+  auto ip = WiFi.localIP();
+
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) 
+  {
+    request->send(200, "text/plain", "Hi! I am ESP32.");
+  });
+  AsyncElegantOTA.begin(&server);    // Start ElegantOTA
+  server.begin();
+  Serial.println("Async Server running");
 }
 
 uint16_t aValues[100] = {0};
 uint16_t bValues[100] = {0};
 byte idx = 0;
+
 void loop()
 {
   /*
   pollEncoders();
   groupA.update();
   groupB.update();
-  seq.loop();
   */
-  delay(15);
+  seq.loop();   delay(15);
   aValues[idx] = analogRead(BUTTONS1);
   bValues[idx] = analogRead(BUTTONS2);
   ++idx;
@@ -123,6 +153,4 @@ void loop()
     Serial.println("=====================");
     idx = 0; 
   }
-  
-
 }

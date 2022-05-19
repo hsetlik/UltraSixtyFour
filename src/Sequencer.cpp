@@ -35,26 +35,16 @@ Sequencer::Sequencer() : pixels(24, PIXEL_PIN, NEO_RGB + NEO_KHZ800),
 
 void Sequencer::setup()
 {
-    for (uint8_t i = 0; i < 24; ++i)
-    {
-        pixels.clear();
-        pixels.setPixelColor(i, Adafruit_NeoPixel::Color(255, 128, 0));
-        pixels.show();
-        delay(500);
-    }
+  
 }
 
 void Sequencer::loop()
 {
-    /*
-    for (uint8_t i = 0; i < 24; ++i)
-    {
-        pixels.clear();
-        pixels.setPixelColor(i, Adafruit_NeoPixel::Color(255, 128, 0));
-        pixels.show();
-        delay(500);
-    }
-    */
+    updateLeds();
+    updateDisplay();
+    updateDACs();
+    updateGates();
+
 }
 void Sequencer::buttonPressed(uint8_t id)
 {
@@ -91,4 +81,21 @@ void Sequencer::setPagePixel(byte idx, uint32_t color)
 void Sequencer::setTrackPixel(byte idx, uint32_t color)
 {
     pixels.setPixelColor(20 + idx, color);
+}
+
+void Sequencer::updateLeds()
+{
+    /*
+    Limit the refresh rate of the pixels
+    Since the LEDs must be updated continuously to reflect the sequence, this function gets called 1:1 from the main loop() function.
+    On an ESP32, this would mean updating the LEDs far more often than is visible, wasting a good amount of time on all the color calculations
+    and serial communication to the pixels.
+    In practice, this works by keeping track of when the LEDs and then checking if enough time has elapsed to update again in the next loop
+    */
+    auto now = millis();
+    if (now - ledLastUpdated > 1000 / MAX_REFRESH_HZ)
+    {
+        //DO PIXEL STUFF HERE
+        ledLastUpdated = now;
+    }
 }
