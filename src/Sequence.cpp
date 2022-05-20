@@ -57,72 +57,6 @@ void Sequence::checkAdvance()
     lastMicros = now;
 }
 
-void Sequence::setSequenceLeds(Adafruit_NeoPixel* stepLeds, Adafruit_NeoPixel* pageLeds)
-{
-    //clear pixels
-    stepLeds->clear();
-    pageLeds->clear();
-    //first: figure out what page we're on
-    uint8_t page = floor(currentStep / PAGE_LENGTH);  
-    if (page < 0 || page > 3)
-    {
-        //page is out of range
-    }
-    //set the page LEDs
-    for(uint8_t p = 0; p < (SEQ_LENGTH / PAGE_LENGTH); ++p)
-    {
-        if (p == page)
-        {
-            auto col = SeqColors::selectColor;
-            pageLeds->setPixelColor(p, col.asRgb());
-        }
-        else
-        {
-            Hsv blank = {0.0f, 0.0f, 0.0f};
-            pageLeds->setPixelColor(p, blank.asRgb());
-        }
-    }
-    //set colors for all the steps
-    auto firstStepIdx = page * PAGE_LENGTH;
-    for (int i = 0; i < PAGE_LENGTH; ++i)
-    {
-        auto& step = tracks[currentTrack].steps[firstStepIdx + i];
-        if (!step.gate && (firstStepIdx + i) != currentStep)
-        {
-            Hsv col = {0.0f, 0.0f, 0.0f};
-            stepLeds->setPixelColor(i, col.asRgb());
-        }
-        else if (!step.gate)
-        {
-            auto color = SeqColors::stepColor;
-            stepLeds->setPixelColor(i, color.asRgb());
-        } else if (step.gate && selectedStep == (firstStepIdx + i))
-        {
-            auto base = SeqColors::pitchColors[step.midiNumber % 12];
-            Hsv col = {base.h, base.s, 1.0f};
-            stepLeds->setPixelColor(i, col.asRgb());
-        } else if (step.gate)
-        {
-            auto col = SeqColors::pitchColors[step.midiNumber % 12];
-            stepLeds->setPixelColor(i, col.asRgb());
-        } else if (selectedStep == (firstStepIdx + i))
-        {
-            auto col = SeqColors::selectColor;
-            stepLeds->setPixelColor(i, col.asRgb());
-        }
-    }
-    //Set the LED for the current step if playing
-    if (isPlaying)
-    {
-        auto s = currentStep % PAGE_LENGTH;
-        auto col = SeqColors::stepColor;
-        stepLeds->setPixelColor(s, col.asRgb());
-    }
-    //send to hardware
-    stepLeds->show();
-    pageLeds->show();
-}
-
 void Sequence::advance()
 {
     microsIntoPeriod -= periodMicros;
@@ -234,4 +168,39 @@ SeqJson Sequence::getJsonDocument(std::string name)
         tracks[t].addNestedStepsArray(jsonTracks);
     }
     return doc;
+}
+
+uint32_t Sequence::getStepColor(uint8_t idx)
+{
+    auto &step = tracks[currentTrack].steps[idx];
+    if (!step.gate)
+    {
+        if (idx == currentStep)
+            return SeqColors::stepColor.asRgb();
+        else if (idx == selectedStep)
+            return SeqColors::selectColor.asRgb();
+        else
+             return SeqColors::off.asRgb();
+    }
+    if (idx == currentStep)
+    {
+        return SeqColors::stepColor.asRgb();
+    }
+    auto base = SeqColors::pitchColors[step.midiNumber % 12];
+    if (idx == selectedStep)
+    {
+        Hsv out = {base.h, base.s, 1.0f};
+        return out.asRgb();
+    }
+    return base.asRgb();
+}
+
+SeqColorState Sequence::currentStepColors()
+{
+    SeqColorState arr = {0};
+    auto& steps = tracks[currentTrack].steps;
+    auto offset = currentStep % 16;
+    for(byte idx = 0; idx < 16; ++idx)
+        arr[idx] = getStepColor(idx);
+    return arr;
 }

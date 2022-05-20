@@ -34,17 +34,17 @@
 #define DAC2 3
 
 //I2C pins
-#define SDA 21
-#define SCL 22
+#define SDA 17
+#define SCL 5
 
 //gate outputs
 #define GATE1 16
-#define GATE2 4
+#define GATE2 1
 #define GATE3 2
 #define GATE4 15
 
 //NeoPixels data line
-#define PIXEL_PIN 19
+#define PIXEL_PIN 18
 
 //Other macros
 #define SCREEN_WIDTH 128

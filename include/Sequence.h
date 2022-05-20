@@ -20,9 +20,12 @@
 #include "Hsv.h"
 #include <ArduinoJson.h>
 #include <string>
+#include <array>
 
 #define SEQ_BYTES 12288
 typedef StaticJsonDocument<SEQ_BYTES> SeqJson;
+
+typedef std::array<uint32_t, 16> SeqColorState;
 
 //the microcontroller pins attached to each gate output
 const uint8_t gatePins[] = {2, 3, 4, 5};
@@ -42,7 +45,7 @@ struct Step
 struct Track
 {
     Track(): gateHigh(false) {}
-    Step steps[SEQ_LENGTH];
+    std::array<Step, SEQ_LENGTH> steps;
     bool gateHigh;
     //returns first the step at or before idx which has its gate toggled on
     int lastOnStep(uint8_t idx);
@@ -55,7 +58,7 @@ class Sequence
 {
 public:
     Sequence();
-    Track tracks[NUM_TRACKS];
+    std::array<Track, NUM_TRACKS> tracks;
     uint8_t currentStep;
     uint8_t currentTrack;
     uint8_t selectedStep;
@@ -63,7 +66,6 @@ public:
     //check whether enough time has elapsed to move to the next step. Call this on every loop before updating hardware
     void checkAdvance();
     //Update the 16-led display and the 4 page LEDs to reflect the current sequence
-    void setSequenceLeds(Adafruit_NeoPixel* stepLeds, Adafruit_NeoPixel* pageLeds);
     //Set the gates
     void updateGates();
     //update the DAC voltages
@@ -82,7 +84,10 @@ public:
     //Get JSON to save sequence file
     SeqJson getJsonDocument(std::string name="sequence name");
     Step& getCurrentStep() { return tracks[currentTrack].steps[currentStep]; }
+    //gets the current state of the 16 step LEDs
+    SeqColorState currentStepColors();
 private:
+    uint32_t getStepColor(uint8_t idx);
     int tempo;
     unsigned long periodMicros;
     unsigned long microsIntoPeriod;

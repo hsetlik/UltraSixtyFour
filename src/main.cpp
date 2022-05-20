@@ -1,17 +1,14 @@
 #include <Arduino.h>
 #include "Sequencer.h"
 #include <Encoder.h>
-#include <WiFi.h>
-#include <AsyncElegantOTA.h>
-#include <AsyncTCP.h>
-#include <ESPAsyncWebServer.h>
 
-Sequencer seq;
-
+Sequencer* pSeq;
+Sequencer& seq = *pSeq;
+/*
 AnalogButtonGroup groupA(BUTTONS1, 6);
 
 AnalogButton encAButton(0, 487); //TODO: measure and set all these voltage readings
-AnalogButton encBButton(1, 1);
+AnalogButton encBButton(1, 1095);
 AnalogButton encCButton(2, 1700);
 AnalogButton encDButton(3, 2300);
 
@@ -63,20 +60,22 @@ void pollEncoders()
     }
   }
 }
-
+*/
 
 //====================================
 const char* ssid = "SD Airport";
 const char* password = "plinsky1737";
 
-AsyncWebServer server(80);
+//AsyncWebServer server(80);
 
 
 
 // button handling
 void setup() 
 {
-  Serial.begin(9600);
+  Serial.begin(115200);
+  /*
+  Serial.println("Starting setup");
   for (uint8_t i = 0; i < 6; ++i)
   {
     aButtons[i]->onPress(handlePress)
@@ -89,33 +88,10 @@ void setup()
     .onHold(handleHold, 500);
     groupB.addButton(*bButtons[i]);
   }
+  */
   Serial.println("buttons set up");
-  // put your setup code here, to run once:
-    WiFi.mode(WIFI_STA);
-  auto res = WiFi.begin(ssid, password);
-  if (res == WL_CONNECT_FAILED)
-  {
-    //OledLog::writeLn("Connection failed");
-  } else if (res == WL_NO_SSID_AVAIL)
-  {
-    //OledLog::writeLn("Network " + ssid + " not available");
-  }
-  Serial.println(res);
-  // Wait for connection
-  while (WiFi.status() != WL_CONNECTED) 
-  {
-    delay(500);
-    Serial.print(".");
-  }
-  auto ip = WiFi.localIP();
-
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) 
-  {
-    request->send(200, "text/plain", "Hi! I am ESP32.");
-  });
-  AsyncElegantOTA.begin(&server);    // Start ElegantOTA
-  server.begin();
-  Serial.println("Async Server running");
+  pSeq = new Sequencer();
+  Serial.println("Sequencer created");
 }
 
 uint16_t aValues[100] = {0};
@@ -124,12 +100,11 @@ byte idx = 0;
 
 void loop()
 {
+  //pollEncoders();
+  //groupA.update();
+  //groupB.update();
+  //seq.loop();
   /*
-  pollEncoders();
-  groupA.update();
-  groupB.update();
-  */
-  seq.loop();   delay(15);
   aValues[idx] = analogRead(BUTTONS1);
   bValues[idx] = analogRead(BUTTONS2);
   ++idx;
@@ -151,6 +126,7 @@ void loop()
     Serial.print("B mean: ");
     Serial.println(bMean);
     Serial.println("=====================");
-    idx = 0; 
+    idx = 0;
   }
+  */
 }
