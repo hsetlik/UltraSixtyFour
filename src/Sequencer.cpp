@@ -6,10 +6,12 @@ Sequencer::Sequencer() : pixels(24, PIXEL_PIN, NEO_RGB + NEO_KHZ800),
                          display(SCREEN_WIDTH, SCREEN_HEIGHT)
 {
     Serial.println("Creating sequencer");
+    /*
     pixels.begin();
     pixels.setBrightness(40);
     Serial.println("Initialized neo pixels");
     // set up DACS
+
     dac1.init();
     dac1.turnOnChannelA();
     dac1.turnOnChannelB();
@@ -22,25 +24,26 @@ Sequencer::Sequencer() : pixels(24, PIXEL_PIN, NEO_RGB + NEO_KHZ800),
     dac2.setGainA(MCP4822::High);
     dac2.setGainB(MCP4822::High);
     Serial.println("Initialized DACs");
+    */
     // set up display
     if (!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS))
     {
+        Serial.println("Could not start display!");
         for (;;)
             ; // Don't proceed, loop forever
+    } else 
+    {
+        Serial.println("Display started successfully");
     }
     display.display();
-    delay(300);
-    display.clearDisplay();
+    Serial.println("Display started");
+    Serial.println("wait over");
+    //display.clearDisplay();
     Serial.println("Initialized display");
     pinMode(GATE1, OUTPUT);
     pinMode(GATE2, OUTPUT);
     pinMode(GATE3, OUTPUT);
     pinMode(GATE4, OUTPUT);
-}
-
-void Sequencer::setup()
-{
-  
 }
 
 void Sequencer::loop()

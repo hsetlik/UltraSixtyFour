@@ -1,9 +1,17 @@
 #include <Arduino.h>
 #include "Sequencer.h"
 #include <Encoder.h>
+#include "OLEDLog.h"
+#include <memory>
 
-Sequencer* pSeq;
-Sequencer& seq = *pSeq;
+std::unique_ptr<Sequencer> seq(nullptr);
+
+
+std::deque<std::string> logDeque;
+void OLEDLog::println(std::string str)
+{
+  //OLEDLog::printToDisplay(str, seq.getDisplay(), logDeque);
+}
 /*
 AnalogButtonGroup groupA(BUTTONS1, 6);
 
@@ -75,23 +83,16 @@ void setup()
 {
   Serial.begin(115200);
   /*
-  Serial.println("Starting setup");
-  for (uint8_t i = 0; i < 6; ++i)
+  if(!seq.getDisplay()->begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) 
   {
-    aButtons[i]->onPress(handlePress)
-    .onHold(handleHold, 500);
-    groupA.addButton(*aButtons[i]);
-  }
-  for (uint8_t i = 0; i < 7; ++i)
-  {
-    bButtons[i]->onPress(handlePress)
-    .onHold(handleHold, 500);
-    groupB.addButton(*bButtons[i]);
+    Serial.println(F("SSD1306 allocation failed"));
+    for(;;); // Don't proceed, loop forever
   }
   */
-  Serial.println("buttons set up");
-  pSeq = new Sequencer();
-  Serial.println("Sequencer created");
+  //OLEDLog::println("Serial started");
+  Serial.println("Serial Started");
+  seq.reset(new Sequencer());
+
 }
 
 uint16_t aValues[100] = {0};
@@ -100,6 +101,7 @@ byte idx = 0;
 
 void loop()
 {
+  //seq.loop();
   //pollEncoders();
   //groupA.update();
   //groupB.update();

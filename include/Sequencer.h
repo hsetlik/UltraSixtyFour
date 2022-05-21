@@ -6,6 +6,7 @@
 #include <Adafruit_SSD1306.h>
 #include "AnalogButtonGroup.h"
 #include "Sequence.h"
+#include "OLEDLog.h"
 
 
 // Pin definitions based on 30-pin ESP32 Devkit V1 pinout
@@ -49,7 +50,6 @@
 //Other macros
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 32
-#define OLED_RESET     5
 #define SCREEN_ADDRESS 0x3C
 
 #define MIN_LOOP_PERIOD 1000
@@ -69,7 +69,6 @@ private:
 
     Sequence currentSequence;
 
-// functions
     void setStepPixel(byte idx, uint32_t color);
     void setPagePixel(byte idx, uint32_t color);
     void setTrackPixel(byte idx, uint32_t color);
@@ -82,11 +81,11 @@ private:
     void updateDisplay();
 public:
     Sequencer();
-    void setup();
     void loop();
     void buttonPressed(uint8_t id);
     void buttonHeld(uint8_t id);
     void encoderTurned(uint8_t id, bool dir);
+    Adafruit_SSD1306* getDisplay() { return &display; }
 };
 
 #endif // !SEQUENCER_H
