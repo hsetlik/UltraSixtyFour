@@ -78,12 +78,12 @@ void Sequencer::encoderTurned(uint8_t id, bool dir)
     {
         case 0:
         {
-            currentSequence.shiftSelected(dir);
+            currentSequence.shiftTempo(dir);
             break;
         }
         case 1:
         {
-            //currentSequence.shiftTempo(dir);
+            currentSequence.shiftSelected(dir);
             break;
         }
         case 2:
