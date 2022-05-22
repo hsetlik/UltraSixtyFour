@@ -40,10 +40,11 @@ class AnalogButtonGroup
 {
 public:
     AnalogButtonGroup(uint8_t pin=A0, uint8_t numButtons=MAX_BUTTONS);
-    //Call this in the `loop()` function to trigger correct button events
     const uint8_t pin;
     const uint8_t numButtons;
+    //Call this in the `loop()` function to trigger correct button events
     void update();
+    // Return the index of the button with the closest mean voltage or -1 if no valid match is available
     int8_t idxForVoltage(uint16_t voltage);
     void addButton(AnalogButton& button);
 private:

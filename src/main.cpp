@@ -71,7 +71,24 @@ void pollEncoders()
     }
   }
 }
-
+//======Button Stuff============
+void initButtons()
+{
+  for (byte i = 0; i < 6; ++i)
+  {
+    auto& button = *aButtons[i];
+    button.onPress(handlePress)
+    .onHold(handleHold, 800);
+    groupA.addButton(button);
+  }
+  for (byte i = 0; i < 7; ++i)
+  {
+    auto& button = *bButtons[i];
+    button.onPress(handlePress)
+    .onHold(handleHold, 800);
+    groupB.addButton(button);
+  }
+}
 //====================================
 const char* ssid = "SD Airport";
 const char* password = "plinsky1737";
@@ -86,32 +103,23 @@ void testOLEDLog()
   }
 }
 
+
 // button handling
 void setup() 
 {
   Serial.begin(115200);
-  /*
-  if(!seq.getDisplay()->begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) 
-  {
-    Serial.println(F("SSD1306 allocation failed"));
-    for(;;); // Don't proceed, loop forever
-  }
-  */
-  Serial.println("Serial Started");
   seq.reset(new Sequencer());
-  OLEDLog::println("Serial started");
-  //OLEDLog::println("Some other text");
-
+  initButtons();
+  OLEDLog::println("Sequencer initialized. . .");
 }
 
-uint16_t aValues[100] = {0};
-uint16_t bValues[100] = {0};
-byte idx = 0;
+unsigned long idx = 0;
 
 void loop()
 {
   seq->loop();
   pollEncoders();
-  //groupA.update();
+ 
+  groupA.update();
   //groupB.update();
 }

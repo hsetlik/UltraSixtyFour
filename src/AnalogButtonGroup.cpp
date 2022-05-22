@@ -39,7 +39,19 @@ void AnalogButtonGroup::update()
     {
         now = millis();
         auto reading = analogRead(pin);
+        /*
+        Serial.print("Analog reading: ");
+        Serial.print(reading);
+        Serial.print("/4095\n");
+        */
         auto idx = idxForVoltage(reading);
+        if (idx != -1)
+        {
+            Serial.print("Button ");
+            Serial.print(idx);
+            Serial.print(" pressed\n"); 
+        }
+
         AnalogButton* button = (idx == -1) ? nullptr : &buttons[idx];
         //if a button has been pressed or released
         if (lastButton != button)
@@ -56,11 +68,9 @@ void AnalogButtonGroup::update()
             }
             if (button != nullptr)
             {
-                /*
                 Serial.print("Button ");
                 Serial.print(button->index);
                 Serial.print(" pressed\n");
-                */
                 button->pressedAt = millis();
                 button->isPressed = true;
             }

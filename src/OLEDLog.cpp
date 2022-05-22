@@ -11,6 +11,7 @@ void OLEDLog::printToDisplay(std::string str, Adafruit_SSD1306* display, std::de
     display->clearDisplay();
     display->setTextSize(1);
     display->setTextColor(SSD1306_WHITE);
+    display->setTextWrap(false);
     for(uint8_t i = 0; i < lines; ++i)
     {
         auto str = log[i];
