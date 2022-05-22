@@ -12,3 +12,18 @@ Hsv Hsv::forMidiNote(uint8_t note)
 {
     return SeqColors::pitchColors[note % 12];
 }
+
+float fLerp(float t, float a, float b)
+{
+    return a + ((b - a) * t);
+}
+
+Hsv Hsv::lerp(float t, Hsv a, Hsv b)
+{
+    return 
+    {
+        fLerp(t, a.h, b.h),
+        fLerp(t, a.s, b.s),
+        fLerp(t, a.v, b.v)
+    };
+}

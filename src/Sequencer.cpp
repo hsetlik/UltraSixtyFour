@@ -46,6 +46,8 @@ Sequencer::Sequencer() : pixels(24, PIXEL_PIN, NEO_RGB + NEO_KHZ800),
     */
     // set up display  //runPixelTest();
     Serial.println("Sequencer initialized");
+    bootAnim.initFrameBuffer();
+    bootAnim.start();
 }
 
 void Sequencer::loop()
@@ -212,6 +214,7 @@ void Sequencer::updateLeds()
             setPagePixel(i, pageColors[i]);
         }
         pixels.show();
+        bootAnim.updatePixels(&pixels);
     }
 }
 

@@ -2,6 +2,13 @@
 #define PIXELANIMATION_H
 #include <vector>
 #include "Hsv.h"
+#define DEFAULT_FRAME_RATE 24
+
+
+typedef std::vector<Hsv> Frame;
+typedef std::vector<Frame> FrameBuffer;
+
+
 
 //Abstract class for pixel animations 
 class PixelAnimation
@@ -9,19 +16,28 @@ class PixelAnimation
 protected:
     bool running;
     unsigned long lastStartedAt;
-    //Pure virtual function where the logic of the animation happens
-    virtual std::vector<uint32_t> currentPixelColors()=0;
+    uint16_t frameRate;
+    unsigned long framePeriodMs;
+    const uint16_t length;
+    uint16_t currentFrame;
+    FrameBuffer buffer;
+    //This virtual function gets called in the constructor to initialize the frame data-- all the animation logic happens here
 public:
-    PixelAnimation(uint8_t n=1);
+    PixelAnimation(uint8_t numPixels=12, uint16_t frames=48, uint16_t rate=DEFAULT_FRAME_RATE);
     virtual ~PixelAnimation();
+    virtual void initFrameBuffer()=0;
     const uint8_t numPixels;
     bool isRunning() { return running; }
-    //starts the animation
+    //Starts the animation
     void start();
-    //Pixels can be passed into this function without checking isRunning()
-    void applyIfRunning(Adafruit_NeoPixel* pixels);
+    //Call this in the loop function
+    void updatePixels(Adafruit_NeoPixel* pixels);
+    //Gets the number of frames in the animation
+    uint16_t getLength() { return length; }
+    //Gets the current frame rate
+    uint16_t getFrameRate() {return frameRate;}
 
-
+    void setFrameRate(uint16_t rate);
 };
 
 

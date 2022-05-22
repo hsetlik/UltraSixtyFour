@@ -192,7 +192,14 @@ uint32_t Sequence::getStepColor(uint8_t idx)
     }
     if (idx == currentStep)
     {
-        return SeqColors::stepColor.asRgb();
+        if (!tracks[currentTrack].steps[idx].gate)
+            return SeqColors::stepColor.asRgb();
+        else
+        {
+            const float lerpFactor = 0.327f;
+            auto noteColor = Hsv::forMidiNote(tracks[currentTrack].steps[currentStep].midiNumber);
+            return Hsv::lerp(lerpFactor, SeqColors::stepColor, noteColor).asRgb();
+        } 
     }
     auto base = SeqColors::pitchColors[step.midiNumber % 12];
     if (idx == selectedStep)

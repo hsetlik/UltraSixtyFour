@@ -6,6 +6,7 @@
 #include <Adafruit_SSD1306.h>
 #include "Sequence.h"
 #include "OLEDLog.h"
+#include "BootAnimation.h"
 
 
 // Pin definitions based on 30-pin ESP32 Devkit V1 pinout
@@ -85,6 +86,8 @@ private:
     Adafruit_SSD1306 display;
 
     Sequence currentSequence;
+
+    BootAnimation bootAnim;
 
     void setStepPixel(byte idx, uint32_t color);
     void setPagePixel(byte idx, uint32_t color);
