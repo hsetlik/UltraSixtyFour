@@ -4,7 +4,6 @@
 #include <MCP48xx.h>
 #include <Wire.h>
 #include <Adafruit_SSD1306.h>
-#include "AnalogButtonGroup.h"
 #include "Sequence.h"
 #include "OLEDLog.h"
 
@@ -55,6 +54,24 @@
 #define MIN_LOOP_PERIOD 1000
 
 #define MAX_REFRESH_HZ 60
+
+//Corresponds to index passed by button library in main.cpp
+enum ButtonId
+{
+    MenuL,
+    MenuR,
+    Play,
+    Track1,
+    Track2,
+    Track3,
+    Track4,
+    E1,
+    E2,
+    E3,
+    E4,
+    PageR,
+    PageL
+};
 
 class Sequencer
 {

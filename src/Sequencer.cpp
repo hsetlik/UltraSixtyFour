@@ -50,6 +50,7 @@ Sequencer::Sequencer() : pixels(24, PIXEL_PIN, NEO_RGB + NEO_KHZ800),
 
 void Sequencer::loop()
 {
+    currentSequence.checkAdvance();
     updateLeds();
     updateDisplay();
     updateDACs();
@@ -58,17 +59,76 @@ void Sequencer::loop()
 }
 void Sequencer::buttonPressed(uint8_t id)
 {
-   Serial.print("Button ");
-    Serial.print(id);
-    Serial.print(" turned\n"); 
+    ButtonId button = (ButtonId)id;
+    switch (button)
+    {
+        case MenuL:
+        {
+            break;
+        }
+        case MenuR:
+        {
+            break;
+        }
+        case Play:
+        {
+            currentSequence.isPlaying = !currentSequence.isPlaying;
+            break;
+        }
+        case Track1:
+        {
+            currentSequence.currentTrack = 0;
+            break;
+        }
+        case Track2:
+        {
+            currentSequence.currentTrack = 1;
+            break;
+        }
+        case Track3:
+        {
+            currentSequence.currentTrack = 2;
+            break;
+        }
+        case Track4:
+        {
+            currentSequence.currentTrack = 3;
+            break;
+        }
+        case E1:
+        {
+            break;
+        }
+        case E2:
+        {
+            break;
+        }
+        case E3:
+        {
+            currentSequence.toggleSelectedGate();
+            break;
+        }
+        case E4:
+        {
+            break;
+        }
+        case PageL:
+        {
+            break;
+        }
+        case PageR:
+        {
+            break;
+        }
+        default:
+            break;
+    }
 }
 void Sequencer::buttonHeld(uint8_t id)
 {
-   Serial.print("Button ");
-    Serial.print(id);
-    Serial.print(" pressed\n"); 
-
+    //TODO
 }
+
 void Sequencer::encoderTurned(uint8_t id, bool dir)
 {
     Serial.print("Encoder ");
@@ -88,6 +148,7 @@ void Sequencer::encoderTurned(uint8_t id, bool dir)
         }
         case 2:
         {
+            currentSequence.shiftNote(dir);
             break;
         }
         case 3:
@@ -134,10 +195,21 @@ void Sequencer::updateLeds()
         //DO PIXEL STUFF HERE
         pixels.clear();
         ledLastUpdated = now;
+        //set the step pixel colors
         auto colors = currentSequence.currentStepColors();
         for(byte i = 0; i < PAGE_LENGTH; ++i)
         {
             setStepPixel(i, colors[i]);
+        }
+
+        //get the track and page colors
+        auto trackColors = currentSequence.currentTrackColors();
+        auto pageColors = currentSequence.currentPageColors();
+
+        for(byte i = 0; i < 4; ++i)
+        {
+            setTrackPixel(i, trackColors[i]);
+            setPagePixel(i, pageColors[i]);
         }
         pixels.show();
     }

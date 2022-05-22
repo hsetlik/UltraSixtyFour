@@ -33,9 +33,9 @@ static AceButton menuRight(nullptr, 6);
 
 static AceButton* const aButtons[] = {&trk1, &trk2, &trk3, &trk4, &play, &menuLeft, &menuRight};
 //measured voltage levels for each button
-static const uint16_t aLevels[] = {0, 307, 708, 1113, 1519, 1962, 2473, 3136};
+static const uint16_t aLevels[] = {307, 708, 1113, 1519, 1962, 2473, 3136};
 
-static LadderButtonConfig aButtonConfig(BUTTONS1, aNumButtons + 1, aLevels, aNumButtons, aButtons);
+static LadderButtonConfig aButtonConfig(BUTTONS1, aNumButtons, aLevels, aNumButtons, aButtons);
 
 // Group B
 
@@ -49,63 +49,50 @@ static AceButton lPage(nullptr, 4);
 static AceButton rPage(nullptr, 5);
 
 static AceButton* const bButtons[] = {&e1, &e2, &e3, &e4, &lPage, &rPage};
+static AceButton* const allButtons[] = {&trk1, &trk2, &trk3, &trk4, &play, &menuLeft, &menuRight, &e1, &e2, &e3, &e4, &lPage, &rPage};
 //measured voltage levels for each button
-static const uint16_t bLevels[] = {0, 482, 1117, 1748, 2386, 2896, 3553};
+static const uint16_t bLevels[] = {482, 1117, 1748, 2386, 2896, 3553};
 
-static LadderButtonConfig bButtonConfig(BUTTONS2, bNumButtons + 1, bLevels, bNumButtons, bButtons);
+static LadderButtonConfig bButtonConfig(BUTTONS2, bNumButtons, bLevels, bNumButtons, bButtons);
 
 static unsigned long numClicks = 0;
 // common button stuff
 void handleEvent(AceButton* button, uint8_t eventType, uint8_t buttonState)
 {
-  //TODO: button callback logic
   if (eventType == AceButton::kEventClicked)
   {
-    bool groupA = false;
-    for (byte i = 0; i < aNumButtons; ++i)
+    // button->getId doesn't work for bc we're using a shared config so we need to check the array
+    uint8_t id = 0;
+    for (byte i = 0; i < aNumButtons + bNumButtons; ++i)
     {
-      if (aButtons[i] == button)
-      {
-          groupA = true;
-          auto logStr = "Button " + std::to_string(i) + " in group A has level ";
-          Serial.println(logStr.c_str());
-          break;
-      }
-    }
-    bool groupB = false;
-    if (!groupA)
-    {
-      for (byte i = 0; i < bNumButtons; ++i)
-      {
-        if (bButtons[i] == button)
+      if (allButtons[i] == button)
         {
-          groupB = true;
-          auto logStr = "Button " + std::to_string(i) + " in group B";
-          Serial.println(logStr.c_str());
-          break;
+          handlePress(i);
+          return;
         }
-      }
     }
-    if (!groupB && !groupA)
+  } else if (eventType == AceButton::kEventLongPressed)
+  {
+    for (byte i = 0; i < aNumButtons + bNumButtons; ++i)
     {
-      Serial.println("No valid button object!");
+      if (allButtons[i] == button)
+        {
+          handleHold(i);
+          return;
+        }
     }
   }
 }
 
-static bool checkA = false;
 void checkButtons()
 {
   static uint16_t prev = millis();
   uint16_t now = millis();
-  if ((uint16_t) (now - prev) >= 5) 
+  if ((uint16_t) (now - prev) >= 3) 
   {
     prev = now;
-    if (checkA)
-      aButtonConfig.checkButtons();
-    else
-      bButtonConfig.checkButtons();
-    checkA = !checkA;
+    aButtonConfig.checkButtons();
+    bButtonConfig.checkButtons();
   }
 }
 
@@ -118,6 +105,7 @@ void initButtons()
   aButtonConfig.setFeature(ButtonConfig::kFeatureDoubleClick);
   aButtonConfig.setFeature(ButtonConfig::kFeatureLongPress);
   aButtonConfig.setFeature(ButtonConfig::kFeatureRepeatPress);
+
 
   bButtonConfig.setEventHandler(handleEvent);
   bButtonConfig.setFeature(ButtonConfig::kFeatureClick);

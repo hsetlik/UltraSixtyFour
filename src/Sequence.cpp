@@ -60,7 +60,8 @@ void Sequence::checkAdvance()
 void Sequence::advance()
 {
     microsIntoPeriod -= periodMicros;
-    currentStep = (currentStep + 1) % SEQ_LENGTH;
+    if (isPlaying)
+        currentStep = (currentStep + 1) % SEQ_LENGTH;
 }
 
 void Sequence::updateGates()
@@ -104,7 +105,7 @@ void Sequence::shiftSelected(bool dirOrLength)
 {
     selectedStep = (dirOrLength) ? (selectedStep + 1) % SEQ_LENGTH : selectedStep - 1;
     if (selectedStep < 0)
-        selectedStep += SEQ_LENGTH;
+        selectedStep = SEQ_LENGTH - 1;
 }
 void Sequence::shiftNote(bool dirOrLength)
 {
@@ -128,6 +129,7 @@ void Sequence::shiftTempo(bool dirOrLength)
     }
     else if (tempo < TEMPO_MIN)
         tempo = TEMPO_MIN;
+    setTempo(tempo);
 }
 void Sequence::shiftGateLength(bool dirOrLength)
 {
@@ -146,6 +148,12 @@ void Sequence::shiftQuantType(bool dirOrLength)
 void Sequence::shiftQuantRoot(bool dirOrLength)
 {
 
+}
+
+void Sequence::toggleSelectedGate()
+{
+    auto& step = tracks[currentTrack].steps[selectedStep];
+    step.gate = !step.gate;
 }
 
 void Sequence::updateMvs()
@@ -198,12 +206,41 @@ uint32_t Sequence::getStepColor(uint8_t idx)
 SeqColorState Sequence::currentStepColors()
 {
     SeqColorState arr = {0};
-    auto& steps = tracks[currentTrack].steps;
-    auto offset = currentStep % 16;
-    for(byte idx = 0; idx < 16; ++idx)
-        arr[idx] = getStepColor(idx);
+    auto keyStep = (isPlaying) ? currentStep : selectedStep;
+    auto page = keyStep / PAGE_LENGTH;
+    for(byte idx = 0; idx < PAGE_LENGTH; ++idx)
+        arr[idx] = getStepColor(idx + (page * PAGE_LENGTH));
     return arr;
 }
+
+QuadColorState Sequence::currentPageColors()
+{
+    QuadColorState arr = {0};
+    auto idx = (isPlaying) ? currentStep : selectedStep;
+    auto page = idx / 16;
+    for(byte i = 0; i < 4; ++i)
+    {
+        if (i == page)
+            arr[i] = SeqColors::trackColors[i].asRgb();
+        else
+            arr[i] = SeqColors::off.asRgb();
+    }
+    return arr;
+}
+
+QuadColorState Sequence::currentTrackColors()
+{
+    QuadColorState arr = {0};
+    for(byte i = 0; i < 4; ++i)
+    {
+        if (i == currentTrack)
+            arr[i] = SeqColors::pitchColors[i].asRgb();
+        else
+            arr[i] = SeqColors::off.asRgb();
+    }
+    return arr;
+}
+
 
 void Sequence::applyCurrentPage()
 {

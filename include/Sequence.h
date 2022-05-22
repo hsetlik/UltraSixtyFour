@@ -26,6 +26,7 @@
 typedef StaticJsonDocument<SEQ_BYTES> SeqJson;
 
 typedef std::array<uint32_t, 16> SeqColorState;
+typedef std::array<uint32_t, 4> QuadColorState;
 
 //the microcontroller pins attached to each gate output
 const uint8_t gatePins[] = {2, 3, 4, 5};
@@ -82,6 +83,7 @@ public:
     void shiftQuantType(bool dirOrLength);
     void shiftQuantRoot(bool dirOrLength);
     //track/sequence manipulation callbacks
+    void toggleSelectedGate();
     //Copies the contents of the current 16-step page and pastes in the other 3 pages
     void applyCurrentPage();
     //removes all notes on the current page
@@ -91,6 +93,10 @@ public:
     Step& getCurrentStep() { return tracks[currentTrack].steps[currentStep]; }
     //gets the current state of the 16 step LEDs
     SeqColorState currentStepColors();
+    //gets the colors for the 4 track pixels
+    QuadColorState currentTrackColors();
+    //gets the colors for the 4 page LEDs
+    QuadColorState currentPageColors();
 private:
     uint32_t getStepColor(uint8_t idx);
     int tempo;
