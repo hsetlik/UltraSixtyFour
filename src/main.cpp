@@ -3,6 +3,8 @@
 #include <Encoder.h>
 #include "OLEDLog.h"
 #include <memory>
+#include <RotaryEncoder.h>
+
 
 std::unique_ptr<Sequencer> seq(nullptr);
 
@@ -10,9 +12,8 @@ std::unique_ptr<Sequencer> seq(nullptr);
 std::deque<std::string> logDeque;
 void OLEDLog::println(std::string str)
 {
-  //OLEDLog::printToDisplay(str, seq.getDisplay(), logDeque);
+  OLEDLog::printToDisplay(str, seq->getDisplay(), logDeque);
 }
-/*
 AnalogButtonGroup groupA(BUTTONS1, 6);
 
 AnalogButton encAButton(0, 487); //TODO: measure and set all these voltage readings
@@ -38,37 +39,38 @@ AnalogButton playButton(6, 1175);
 
 AnalogButton* bButtons[] = {&trk1Button, &trk2Button, &trk3Button, &trk4Button, &leftButton, &rightButton, &playButton};
 
-void handlePress(uint8_t idx) { seq.buttonPressed(idx); }
-void handleHold(uint8_t idx) { seq.buttonHeld(idx); }
+void handlePress(uint8_t idx) { seq->buttonPressed(idx); }
+void handleHold(uint8_t idx) { seq->buttonHeld(idx); }
 
 //Encoder stuff=======================
-static long pos[] = {0, 0, 0, 0};
+long pos[] = {0, 0, 0, 0};
 
-Encoder encA(ADATA, ACLK);
-Encoder encB(BDATA, BCLK);
-Encoder encC(CDATA, CCLK);
-Encoder encD(DDATA, DCLK);
+RotaryEncoder encA(ADATA, ACLK, RotaryEncoder::LatchMode::FOUR3);
+RotaryEncoder encB(BDATA, BCLK, RotaryEncoder::LatchMode::FOUR3);
+RotaryEncoder encC(CDATA, CCLK, RotaryEncoder::LatchMode::FOUR3);
+RotaryEncoder encD(DDATA, DCLK, RotaryEncoder::LatchMode::FOUR3);
 
-Encoder* encoders[] = {&encA, &encB, &encC, &encD};
+RotaryEncoder* encoders[] = {&encA, &encB, &encC, &encD};
 
 void handleEncoderMove(uint8_t idx, bool dir)
 {
-  seq.encoderTurned(idx, dir);
+  seq->encoderTurned(idx, dir);
 }
 
 void pollEncoders()
 {
   for(byte i = 0; i < 4; i++)
   {
-    long newPos = encoders[i]->read();
+    encoders[i]->tick();
+    long newPos =  encoders[i]->getPosition();
     if (newPos != pos[i])
     {
+      //OLEDLog::println("encoder moved");
       handleEncoderMove(i, newPos > pos[i]);
       pos[i] = newPos;
     }
   }
 }
-*/
 
 //====================================
 const char* ssid = "SD Airport";
@@ -76,7 +78,13 @@ const char* password = "plinsky1737";
 
 //AsyncWebServer server(80);
 
-
+void testOLEDLog()
+{
+  for(byte i = 0; i < 10; ++i)
+  {
+    OLEDLog::println("Line number " + std::to_string(i));
+  }
+}
 
 // button handling
 void setup() 
@@ -89,9 +97,10 @@ void setup()
     for(;;); // Don't proceed, loop forever
   }
   */
-  //OLEDLog::println("Serial started");
   Serial.println("Serial Started");
   seq.reset(new Sequencer());
+  OLEDLog::println("Serial started");
+  //OLEDLog::println("Some other text");
 
 }
 
@@ -101,34 +110,8 @@ byte idx = 0;
 
 void loop()
 {
-  //seq.loop();
-  //pollEncoders();
+  seq->loop();
+  pollEncoders();
   //groupA.update();
   //groupB.update();
-  //seq.loop();
-  /*
-  aValues[idx] = analogRead(BUTTONS1);
-  bValues[idx] = analogRead(BUTTONS2);
-  ++idx;
-  if (idx == 100)
-  {
-    uint32_t aTotal = 0;
-    uint32_t bTotal = 0;
-    for (auto i = 0; i < 100; ++i)
-    {
-      aTotal += aValues[i];
-      bTotal += bValues[i];
-    }
-    auto aMean = aTotal / 100;
-    auto bMean = bTotal / 100;
-
-    Serial.print("A mean: ");
-    Serial.println(aMean);
-    Serial.println("=====================");
-    Serial.print("B mean: ");
-    Serial.println(bMean);
-    Serial.println("=====================");
-    idx = 0;
-  }
-  */
 }

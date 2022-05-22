@@ -11,18 +11,18 @@
 
 // Pin definitions based on 30-pin ESP32 Devkit V1 pinout
 //Encoder pins
-#define ADATA 36
-#define ACLK 39
-#define BDATA 34
-#define BCLK 35
-#define CDATA 32
-#define CCLK 33
-#define DDATA 25
-#define DCLK 26
+#define ADATA 34
+#define ACLK 35
+#define BDATA 32
+#define BCLK 33
+#define CDATA 25
+#define CCLK 26
+#define DDATA 27
+#define DCLK 14
 
 //Analog Button pins
-#define BUTTONS1 27
-#define BUTTONS2 14
+#define BUTTONS1 36
+#define BUTTONS2 39
 
 //sequence inputs
 #define CV_IN 12
@@ -79,6 +79,8 @@ private:
     void updateDACs();
     void updateGates();
     void updateDisplay();
+// testing/debugging
+    void runPixelTest();
 public:
     Sequencer();
     void loop();

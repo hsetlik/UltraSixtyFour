@@ -28,6 +28,7 @@ pin(p),
 numButtons(n),
 lastButton(nullptr)
 {
+    pinMode(pin, ANALOG);
     buttons = new AnalogButton[numButtons];
     now = millis();
 }

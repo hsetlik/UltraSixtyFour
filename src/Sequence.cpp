@@ -204,3 +204,53 @@ SeqColorState Sequence::currentStepColors()
         arr[idx] = getStepColor(idx);
     return arr;
 }
+
+void Sequence::applyCurrentPage()
+{
+    auto current = pageSteps(currentStep);
+    for(byte i = 0; i < SEQ_LENGTH / PAGE_LENGTH; ++i)
+    {
+        if (!i == pageForStep(currentStep))
+        {
+            auto page = getPage(currentStep);
+            page = current;
+        }
+    }
+
+}
+
+void Sequence::clearCurrentPage()
+{
+    auto current = pageSteps(currentStep);
+    for (auto i = 0; i < PAGE_LENGTH; ++i)
+    {
+        *current[i] = Step();
+    }
+}
+
+uint8_t Sequence::pageForStep(uint8_t step)
+{
+    return (uint8_t)floor(step / PAGE_LENGTH);
+}
+
+std::array<Step*, PAGE_LENGTH> Sequence::pageSteps(uint8_t step)
+{
+    std::array<Step*, PAGE_LENGTH> output;
+    auto offset = pageForStep(step) * PAGE_LENGTH;
+    for(uint8_t i = 0; i < PAGE_LENGTH; ++i)
+    {
+        output[i] = &tracks[currentTrack].steps[offset + i];
+    }
+    return output;
+}
+
+std::array<Step*, PAGE_LENGTH> Sequence::getPage(uint8_t page)
+{
+    std::array<Step*, PAGE_LENGTH> output;
+    auto offset = page * PAGE_LENGTH;
+    for(uint8_t i = 0; i < PAGE_LENGTH; ++i)
+    {
+        output[i] = &tracks[currentTrack].steps[offset + i];
+    }
+    return output;
+}

@@ -81,6 +81,11 @@ public:
     void shiftGateLength(bool dirOrLength);
     void shiftQuantType(bool dirOrLength);
     void shiftQuantRoot(bool dirOrLength);
+    //track/sequence manipulation callbacks
+    //Copies the contents of the current 16-step page and pastes in the other 3 pages
+    void applyCurrentPage();
+    //removes all notes on the current page
+    void clearCurrentPage();
     //Get JSON to save sequence file
     SeqJson getJsonDocument(std::string name="sequence name");
     Step& getCurrentStep() { return tracks[currentTrack].steps[currentStep]; }
@@ -93,7 +98,8 @@ private:
     unsigned long microsIntoPeriod;
     unsigned long lastMicros;
     void advance();
-
-
+    uint8_t pageForStep(uint8_t step);
+    std::array<Step*, PAGE_LENGTH> pageSteps(uint8_t step);
+    std::array<Step*, PAGE_LENGTH> getPage(uint8_t page);
 };
 #endif
