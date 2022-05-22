@@ -26,6 +26,7 @@ public:
     PixelAnimation(uint8_t numPixels=12, uint16_t frames=48, uint16_t rate=DEFAULT_FRAME_RATE);
     virtual ~PixelAnimation();
     virtual void initFrameBuffer()=0;
+    virtual std::vector<uint32_t> currentColorVector()=0;
     const uint8_t numPixels;
     bool isRunning() { return running; }
     //Starts the animation

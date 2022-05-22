@@ -21,15 +21,15 @@
 #include <ArduinoJson.h>
 #include <string>
 #include <array>
+#include <vector>
 
 #define SEQ_BYTES 12288
 typedef StaticJsonDocument<SEQ_BYTES> SeqJson;
-
-typedef std::array<uint32_t, 16> SeqColorState;
-typedef std::array<uint32_t, 4> QuadColorState;
-
 //the microcontroller pins attached to each gate output
 const uint8_t gatePins[] = {2, 3, 4, 5};
+
+typedef std::vector<uint32_t> ColorState;
+
 
 //One step in a sequence track
 struct Step
@@ -88,15 +88,17 @@ public:
     void applyCurrentPage();
     //removes all notes on the current page
     void clearCurrentPage();
+    //removes all notes from the current track
+    void clearTrack(uint8_t trk) {tracks[trk] = Track();}
     //Get JSON to save sequence file
     SeqJson getJsonDocument(std::string name="sequence name");
     Step& getCurrentStep() { return tracks[currentTrack].steps[currentStep]; }
     //gets the current state of the 16 step LEDs
-    SeqColorState currentStepColors();
+    ColorState currentStepColors();
     //gets the colors for the 4 track pixels
-    QuadColorState currentTrackColors();
+    ColorState currentTrackColors();
     //gets the colors for the 4 page LEDs
-    QuadColorState currentPageColors();
+    ColorState currentPageColors();
 private:
     uint32_t getStepColor(uint8_t idx);
     int tempo;

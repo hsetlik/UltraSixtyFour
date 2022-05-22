@@ -210,40 +210,40 @@ uint32_t Sequence::getStepColor(uint8_t idx)
     return base.asRgb();
 }
 
-SeqColorState Sequence::currentStepColors()
+ColorState Sequence::currentStepColors()
 {
-    SeqColorState arr = {0};
+    ColorState arr = {};
     auto keyStep = (isPlaying) ? currentStep : selectedStep;
     auto page = keyStep / PAGE_LENGTH;
     for(byte idx = 0; idx < PAGE_LENGTH; ++idx)
-        arr[idx] = getStepColor(idx + (page * PAGE_LENGTH));
+        arr.push_back(getStepColor(idx + (page * PAGE_LENGTH)));
     return arr;
 }
 
-QuadColorState Sequence::currentPageColors()
+ColorState Sequence::currentPageColors()
 {
-    QuadColorState arr = {0};
+    ColorState arr = {};
     auto idx = (isPlaying) ? currentStep : selectedStep;
     auto page = idx / 16;
     for(byte i = 0; i < 4; ++i)
     {
         if (i == page)
-            arr[i] = SeqColors::trackColors[i].asRgb();
+            arr.push_back(SeqColors::trackColors[i].asRgb());
         else
-            arr[i] = SeqColors::off.asRgb();
+            arr.push_back(SeqColors::off.asRgb());
     }
     return arr;
 }
 
-QuadColorState Sequence::currentTrackColors()
+ColorState Sequence::currentTrackColors()
 {
-    QuadColorState arr = {0};
+    ColorState arr = {};
     for(byte i = 0; i < 4; ++i)
     {
         if (i == currentTrack)
-            arr[i] = SeqColors::pitchColors[i].asRgb();
+            arr.push_back(SeqColors::pitchColors[i].asRgb());
         else
-            arr[i] = SeqColors::off.asRgb();
+            arr.push_back(SeqColors::off.asRgb());
     }
     return arr;
 }

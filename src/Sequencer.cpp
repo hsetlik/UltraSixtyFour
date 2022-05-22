@@ -129,6 +129,72 @@ void Sequencer::buttonPressed(uint8_t id)
 void Sequencer::buttonHeld(uint8_t id)
 {
     //TODO
+    ButtonId button = (ButtonId)id;
+    switch (button)
+    {
+        case MenuL:
+        {
+            break;
+        }
+        case MenuR:
+        {
+            break;
+        }
+        case Play:
+        {
+            break;
+        }
+        case Track1:
+        {
+            trackClearAnim.track = 0;
+            trackClearAnim.start();
+            break;
+        }
+        case Track2:
+        {
+            trackClearAnim.track = 1;
+            trackClearAnim.start();
+            break;
+        }
+        case Track3:
+        {
+            trackClearAnim.track = 2;
+            trackClearAnim.start();
+            break;
+        }
+        case Track4:
+        {
+            trackClearAnim.track = 2;
+            trackClearAnim.start();
+            break;
+        }
+        case E1:
+        {
+            break;
+        }
+        case E2:
+        {
+            break;
+        }
+        case E3:
+        {
+            break;
+        }
+        case E4:
+        {
+            break;
+        }
+        case PageL:
+        {
+            break;
+        }
+        case PageR:
+        {
+            break;
+        }
+        default:
+            break;
+    }
 }
 
 void Sequencer::encoderTurned(uint8_t id, bool dir)
