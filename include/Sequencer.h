@@ -79,6 +79,7 @@ enum ButtonId
 class Sequencer
 {
 private:
+
     MCP4822 dac1;
 
     MCP4822 dac2;
@@ -94,8 +95,6 @@ private:
     TrackClearAnimation trackClearAnim;
 
     ApplyPageAnimation applyPageAnim;
-
-    
 
     void setStepPixel(byte idx, uint32_t color);
     void setPagePixel(byte idx, uint32_t color);
