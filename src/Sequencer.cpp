@@ -46,7 +46,6 @@ Sequencer::Sequencer() : pixels(24, PIXEL_PIN, NEO_RGB + NEO_KHZ800),
     */
     // set up display  //runPixelTest();
     Serial.println("Sequencer initialized");
-    bootAnim.initFrameBuffer();
     bootAnim.start();
 }
 
@@ -116,6 +115,7 @@ void Sequencer::buttonPressed(uint8_t id)
         }
         case PageL:
         {
+            Serial.println("Page left clicked");
             break;
         }
         case PageR:
@@ -128,7 +128,6 @@ void Sequencer::buttonPressed(uint8_t id)
 }
 void Sequencer::buttonHeld(uint8_t id)
 {
-    //TODO
     ButtonId button = (ButtonId)id;
     switch (button)
     {
@@ -148,24 +147,28 @@ void Sequencer::buttonHeld(uint8_t id)
         {
             trackClearAnim.track = 0;
             trackClearAnim.start();
+            currentSequence.clearTrack(0);
             break;
         }
         case Track2:
         {
             trackClearAnim.track = 1;
             trackClearAnim.start();
+            currentSequence.clearTrack(1);
             break;
         }
         case Track3:
         {
             trackClearAnim.track = 2;
             trackClearAnim.start();
+            currentSequence.clearTrack(2);
             break;
         }
         case Track4:
         {
             trackClearAnim.track = 2;
             trackClearAnim.start();
+            currentSequence.clearTrack(3);
             break;
         }
         case E1:
@@ -186,6 +189,8 @@ void Sequencer::buttonHeld(uint8_t id)
         }
         case PageL:
         {
+            currentSequence.applyCurrentPage();
+            applyPageAnim.start();
             break;
         }
         case PageR:
@@ -265,6 +270,7 @@ void Sequencer::updateLeds()
         ledLastUpdated = now;
         //set the step pixel colors
         auto colors = currentSequence.currentStepColors();
+        colors = bootAnim.process(colors);
         for(byte i = 0; i < PAGE_LENGTH; ++i)
         {
             setStepPixel(i, colors[i]);
@@ -272,15 +278,15 @@ void Sequencer::updateLeds()
 
         //get the track and page colors
         auto trackColors = currentSequence.currentTrackColors();
+        trackColors = trackClearAnim.process(trackColors);
         auto pageColors = currentSequence.currentPageColors();
-
+        pageColors = applyPageAnim.process(pageColors);
         for(byte i = 0; i < 4; ++i)
         {
             setTrackPixel(i, trackColors[i]);
             setPagePixel(i, pageColors[i]);
         }
         pixels.show();
-        bootAnim.updatePixels(&pixels);
     }
 }
 

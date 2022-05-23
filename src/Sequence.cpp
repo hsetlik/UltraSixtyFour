@@ -260,7 +260,6 @@ void Sequence::applyCurrentPage()
             page = current;
         }
     }
-
 }
 
 void Sequence::clearCurrentPage()

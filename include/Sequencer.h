@@ -8,6 +8,7 @@
 #include "OLEDLog.h"
 #include "BootAnimation.h"
 #include "TrackClearAnimation.h"
+#include "ApplyPageAnimation.h"
 
 
 // Pin definitions based on 30-pin ESP32 Devkit V1 pinout
@@ -91,6 +92,9 @@ private:
     BootAnimation bootAnim;
 
     TrackClearAnimation trackClearAnim;
+
+    ApplyPageAnimation applyPageAnim;
+
     
 
     void setStepPixel(byte idx, uint32_t color);

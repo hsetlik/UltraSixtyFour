@@ -22,17 +22,21 @@ protected:
     uint16_t currentFrame;
     FrameBuffer buffer;
     //This virtual function gets called in the constructor to initialize the frame data-- all the animation logic happens here
+    virtual void initFrameBuffer()=0;
+    std::vector<uint32_t> currentColorVector();
+    void finish();
 public:
     PixelAnimation(uint8_t numPixels=12, uint16_t frames=48, uint16_t rate=DEFAULT_FRAME_RATE);
     virtual ~PixelAnimation();
-    virtual void initFrameBuffer()=0;
-    virtual std::vector<uint32_t> currentColorVector()=0;
+    std::vector<uint32_t> process(std::vector<uint32_t>& arr)
+    {
+        return running ? currentColorVector() : arr;
+    }
     const uint8_t numPixels;
     bool isRunning() { return running; }
     //Starts the animation
     void start();
     //Call this in the loop function
-    void updatePixels(Adafruit_NeoPixel* pixels);
     //Gets the number of frames in the animation
     uint16_t getLength() { return length; }
     //Gets the current frame rate

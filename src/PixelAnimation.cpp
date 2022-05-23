@@ -20,39 +20,45 @@ void PixelAnimation::start()
 {
     currentFrame = 0;
     lastStartedAt = millis();
+    if (buffer.size() < 1)
+        initFrameBuffer();
     running = true;
+    Serial.println("Animation started. . .");
 }
 
-void PixelAnimation::updatePixels(Adafruit_NeoPixel* pixels)
+void PixelAnimation::finish()
 {
-    if (!running)
-        return;
-    auto now = millis();
-    //advance to the next frame
-    if (now - lastStartedAt > framePeriodMs)
-    {
-        //check if the animation is over
-        if (currentFrame >= length)
-        {
-            currentFrame = 0;
-            running = false;
-            return;
-        }
-        lastStartedAt = now;
-        //load the new frame in from the buffer
-        auto& frame = buffer[currentFrame];
-        pixels->clear();
-        for(byte i = 0; i < numPixels; ++i)
-        {
-            pixels->setPixelColor(i, frame[i].asRgb());
-        }
-        pixels->show();
-        ++currentFrame;
-    }
+    running = false;
+    buffer.clear();
 }
 
 void PixelAnimation::setFrameRate(uint16_t rate)
 {
     frameRate = rate;
     framePeriodMs = 1000 / frameRate;
+}
+
+std::vector<uint32_t> PixelAnimation::currentColorVector()
+{
+  
+    std::vector<uint32_t> output = {};
+    auto &frame = buffer[currentFrame];
+    for(auto& p : frame)
+    {
+        output.push_back(p.asRgb());
+    }
+
+    auto now = millis();
+    bool bufferShouldClear = false;
+    //advance to the next frame
+    if (now - lastStartedAt > framePeriodMs)
+    {   
+        ++currentFrame;
+        if (currentFrame >= length)
+        {
+            finish();
+        }
+        lastStartedAt = now;
+    }
+    return output;
 }

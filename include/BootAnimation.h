@@ -8,5 +8,6 @@ class BootAnimation : public PixelAnimation
 public:
     BootAnimation();
     ~BootAnimation();
+private:
     void initFrameBuffer() override;
 };

@@ -8,8 +8,9 @@ private:
     /* data */
 public:
     uint8_t track;
-    void initFrameBuffer() override;
     TrackClearAnimation(byte track=0);
     ~TrackClearAnimation();
+private:
+    void initFrameBuffer() override;
 };
 #endif // !TRACKCLEARANIMATION_H

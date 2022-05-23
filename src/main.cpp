@@ -59,29 +59,18 @@ static unsigned long numClicks = 0;
 // common button stuff
 void handleEvent(AceButton* button, uint8_t eventType, uint8_t buttonState)
 {
-  if (eventType == AceButton::kEventClicked)
-  {
-    // button->getId doesn't work for bc we're using a shared config so we need to check the array
-    uint8_t id = 0;
+  
     for (byte i = 0; i < aNumButtons + bNumButtons; ++i)
     {
       if (allButtons[i] == button)
         {
-          handlePress(i);
+          if (eventType == AceButton::kEventClicked)
+            handlePress(i);
+          else if (eventType == AceButton::kEventLongPressed)
+            handleHold(i);
           return;
         }
     }
-  } else if (eventType == AceButton::kEventLongPressed)
-  {
-    for (byte i = 0; i < aNumButtons + bNumButtons; ++i)
-    {
-      if (allButtons[i] == button)
-        {
-          handleHold(i);
-          return;
-        }
-    }
-  }
 }
 
 void checkButtons()
@@ -91,8 +80,8 @@ void checkButtons()
   if ((uint16_t) (now - prev) >= 3) 
   {
     prev = now;
-    aButtonConfig.checkButtons();
     bButtonConfig.checkButtons();
+    aButtonConfig.checkButtons();
   }
 }
 
@@ -102,16 +91,16 @@ void initButtons()
   pinMode(BUTTONS2, INPUT);
   aButtonConfig.setEventHandler(handleEvent);
   aButtonConfig.setFeature(ButtonConfig::kFeatureClick);
-  aButtonConfig.setFeature(ButtonConfig::kFeatureDoubleClick);
   aButtonConfig.setFeature(ButtonConfig::kFeatureLongPress);
-  aButtonConfig.setFeature(ButtonConfig::kFeatureRepeatPress);
+  aButtonConfig.setFeature(ButtonConfig::kFeatureSuppressAfterLongPress);
+  aButtonConfig.setLongPressDelay(800);
 
 
   bButtonConfig.setEventHandler(handleEvent);
   bButtonConfig.setFeature(ButtonConfig::kFeatureClick);
-  bButtonConfig.setFeature(ButtonConfig::kFeatureDoubleClick);
   bButtonConfig.setFeature(ButtonConfig::kFeatureLongPress);
-  bButtonConfig.setFeature(ButtonConfig::kFeatureRepeatPress); 
+  bButtonConfig.setFeature(ButtonConfig::kFeatureSuppressAfterClick);
+  bButtonConfig.setLongPressDelay(800);
   Serial.println("buttons initialized");
 }
 //======================================
