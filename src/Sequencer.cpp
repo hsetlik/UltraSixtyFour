@@ -115,11 +115,12 @@ void Sequencer::buttonPressed(uint8_t id)
         }
         case PageL:
         {
-            Serial.println("Page left clicked");
+            currentSequence.shiftPage(true);
             break;
         }
         case PageR:
         {
+            currentSequence.shiftPage(false);
             break;
         }
         default:

@@ -251,14 +251,14 @@ ColorState Sequence::currentTrackColors()
 
 void Sequence::applyCurrentPage()
 {
-    auto current = pageSteps(currentStep);
-    for(byte i = 0; i < SEQ_LENGTH / PAGE_LENGTH; ++i)
+    auto idx = isPlaying ? currentStep : selectedStep;
+    int page = idx / PAGE_LENGTH;
+    auto startIdx = page * PAGE_LENGTH;
+    for(byte i = 0; i < SEQ_LENGTH; ++i)
     {
-        if (!i == pageForStep(currentStep))
-        {
-            auto page = getPage(currentStep);
-            page = current;
-        }
+        auto offset = i % PAGE_LENGTH;
+        auto toCopy = tracks[currentTrack].steps[startIdx + offset];
+        tracks[currentTrack].steps[i] = toCopy;
     }
 }
 
@@ -269,6 +269,18 @@ void Sequence::clearCurrentPage()
     {
         *current[i] = Step();
     }
+}
+    
+void Sequence::shiftPage(bool dir)
+{
+    int8_t initial = isPlaying ? currentStep : selectedStep;
+    initial = dir ? (initial + PAGE_LENGTH) % SEQ_LENGTH : initial - PAGE_LENGTH;
+    if (initial < 0)
+        initial += SEQ_LENGTH;
+    if (isPlaying)
+        currentStep = initial;
+    else
+        selectedStep = initial;
 }
 
 uint8_t Sequence::pageForStep(uint8_t step)

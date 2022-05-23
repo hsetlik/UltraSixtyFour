@@ -91,6 +91,7 @@ public:
     //removes all notes from the current track
     void clearTrack(uint8_t trk) {tracks[trk] = Track();}
     //Get JSON to save sequence file
+    void shiftPage(bool dir);
     SeqJson getJsonDocument(std::string name="sequence name");
     Step& getCurrentStep() { return tracks[currentTrack].steps[currentStep]; }
     //gets the current state of the 16 step LEDs
