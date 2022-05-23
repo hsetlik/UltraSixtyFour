@@ -4,7 +4,10 @@
 #include <memory>
 #include <RotaryEncoder.h>
 #include <AceButton.h>
-
+#include <ESPAsyncWebServer.h>
+#include <AsyncElegantOTA.h>
+#include <WiFi.h>
+#include <AsyncTCP.h>
 using ace_button::AceButton;
 using ace_button::ButtonConfig;
 using ace_button::LadderButtonConfig;
@@ -38,8 +41,6 @@ static const uint16_t aLevels[] = {307, 708, 1113, 1519, 1962, 2473, 3136};
 static LadderButtonConfig aButtonConfig(BUTTONS1, aNumButtons, aLevels, aNumButtons, aButtons);
 
 // Group B
-
-//Group A
 const byte bNumButtons = 6;
 static AceButton e1(nullptr, 0);
 static AceButton e2(nullptr, 1);
@@ -133,13 +134,48 @@ void pollEncoders()
     }
   }
 }
-//======Button Stuff============
+//==============Server Stuff============
 
+
+std::string ssid = "SD Airport";
+std::string password = "plinsky1737";
+AsyncWebServer server(80);
+
+
+ void initWifi()
+ {
+    WiFi.mode(WIFI_STA);
+    
+  auto res = WiFi.begin(ssid.c_str(), password.c_str());
+  if (res == WL_CONNECT_FAILED)
+  {
+    //OledLog::writeLn("Connection failed");
+  } else if (res == WL_NO_SSID_AVAIL)
+  {
+    //OledLog::writeLn("Network " + ssid + " not available");
+  }
+  Serial.println(res);
+  // Wait for connection
+  while (WiFi.status() != WL_CONNECTED) 
+  {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println();
+  auto ip = WiFi.localIP();
+  std::string logString = "Connected to " +  ssid + " with IP address " + ip.toString().c_str();
+  Serial.println(logString.c_str());
+
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) 
+  {
+    request->send(200, "text/plain", "Hi! I am ESP32.");
+  });
+  AsyncElegantOTA.begin(&server);    // Start ElegantOTA
+  server.begin();
+
+ }
 //====================================
-const char* ssid = "SD Airport";
-const char* password = "plinsky1737";
 
-//AsyncWebServer server(80);
 
 void testOLEDLog()
 {
@@ -155,6 +191,8 @@ void setup()
   seq.reset(new Sequencer());
   initButtons();
   OLEDLog::println("Sequencer initialized. . .");
+  initWifi();
+  Serial.println("Wifi Initialized");
 }
 
 unsigned long idx = 0;

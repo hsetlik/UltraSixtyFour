@@ -14,7 +14,7 @@ The Ultra 64 is a powerful hardware step sequencer built to Eurorack standards. 
     - [**Peripheral hardware**](#peripheral-hardware)
   - [**Software**](#software)
     - [**Approach and hardware considerations**](#approach-and-hardware-considerations)
-  - [**Develoment environment and dependencies**](#develoment-environment-and-dependencies)
+    - [**Develoment environment and dependencies**](#develoment-environment-and-dependencies)
     - [**Interesting/challenging bits**](#interestingchallenging-bits)
 
 ## **Controls and features**
@@ -34,7 +34,7 @@ The vertical column of four buttons next to the output jack are used to select t
 The three encoders just above the sequence LEDs are used to navigate and edit the current track's pattern.
 
 - The leftmost knob uses its integrated push button to toggle between two modes; in the first mode the encoder controls the pitch of the selected note while in the second it controls the selected step's gate length.
-- The center knob moves the cursor on the sequence LEDs to select the step to be edited. Its push button toggled the selected step on and off.
+- The center knob moves the cursor on the sequence LEDs to select the step to be edited. Its push button toggles the selected step on and off.
 - The rightmost knob, like the leftmost, has two modes which are toggled by the encoder's push button. By default the encoder controls the tempo of the current sequence, but when toggled into quantize mode, it controls the scale to which the track is being quantized. NOTE: While in quantize mode, the leftmost encoder selects the tonal center of the quantizing scale.
   
 ### **Page buttons**
@@ -47,11 +47,11 @@ An ESP32 microcontroller development board is at the heart of the Ultra 64. The 
 
 ### **Shorcomings of older MCUs and past design challenges**
 
- The [previous incarnation](https://github.com/hsetlik/CircleSixteen) of my digital step sequencer relied on a pair of Arduino Nano boards which are built around the 8-bit Atmega328 microcontroller. While perfectly functional, the Circle Sixteen left much to be desired in the way of capability and hardware control options; the 328 struggles to keep up with polling a large number of encoders and buttons for input while also driving the output and handling the sequence and playback logic. For this reason, the Circle Sixteen used only a handful of electromechanical inputs to control everything which makes the process of entering and editing sequences tedious and slow. Additionally, the 328's 1024 byte EEPROM means that saving and loading sequences is out of the question without some additional hardware to provide more non-volatile memory.
+ The [previous incarnation](https://github.com/hsetlik/CircleSixteen) of my digital step sequencer relied on a pair of Arduino Nano boards which are built around the 8-bit Atmega328 microcontroller. While perfectly functional, the Circle Sixteen left much to be desired in the way of capability and hardware control options; the 328 struggles to keep up with polling a large number of encoders and buttons for input while also driving the output and handling the sequence and playback logic. For this reason, the Circle Sixteen used only a handful of electromechanical inputs to control everything, which makes the process of entering and editing sequences tedious and slow. Additionally, the 328's 1024 byte EEPROM means that saving and loading sequences is out of the question without some additional hardware to provide more non-volatile memory.
 
 ### **The brains- ESP32**
 
-The problems with the Arduino Nano board described above are non-issues with the ESP32 development board. Considering the [roughly 33x](https://www.makerguides.com/esp32-vs-arduino-speed-comparison/) speed difference between the two microcontrollers, polling the encoders and buttons quickly enough is no longer a limiting factor, so the two I2C-linked microcontroller boards used in the Circle Sixteen can be replaced with a single ESP32. The ESP32's built-in WiFi capability comes as a welcome bonus, and is useful for both over-the-air firmware updates in development and uploading and downloading pattern files to the sequencer. Those pattern files can be stored in the ESP32's 4mb flash memory without any need for additional hardware.
+The problems with the Arduino Nano board described above are non-issues with the ESP32 development board. Considering the [roughly 33x](https://www.makerguides.com/esp32-vs-arduino-speed-comparison/) speed difference between the two microcontrollers, polling the encoders and buttons quickly enough is no longer a limiting factor, so the two I2C-linked microcontroller boards used in the Circle Sixteen can be replaced with a single ESP32. The ESP32's built-in WiFi capability comes as a welcome bonus, and is useful for both over-the-air firmware updates in development and uploading and downloading pattern files to the sequencer. Those pattern files can be stored in the ESP32's 4mb flash memory without any need for additional hardware. The only drawback of the ESP32 is its higher power consumption. The device can pull anywhere from 15mA to 280mA, where an Atmega328 hardly draws 20mA under strain. In the context of a Eurorack system supplied by a wall adapter, drawing 250mA isn't a major issue; but it is worth keeping in mind when considering hardware for battery-powered devices.
 
 ### **Peripheral hardware**
 
@@ -69,7 +69,7 @@ The Ultra 64 uses relatively little peripheral hardware, all of which is connect
 
 Having never used an ESP32 before, my assumption was to treat the board more or less like an Arduino with a bit more oomph. As I got more familiar with the device and read up a bit on modern embedded C++, I took an approach more in line with the object-oriented modern C++ paradigm I'm used to from writing C++ for desktop systems. After coming to understand the ESP32 a bit better, I took advantage of dynamic STL containers and other more memory-intensive code, which helped to improve much of the firmware's efficiency and readability by avoiding many of the headaches that come with C-style arrays and non-RAII memory management with the `new` and `delete` keywords.
 
-## **Develoment environment and dependencies**
+### **Develoment environment and dependencies**
 
 All this code was written in Visual Studio Code with the [PlatformIO IDE](https://platformio.org/) extension, which handles serial communication, flashing firmware to the microcontroller, and managing devices and bootloaders. PlatformIO also comes with a very powerful package manager and dependency handling system which makes working with C++ libraries uncharacteristically easy. I make a point of limiting dependencies and not relying on a laundry list of 3rd-party libraries. But certain libraries, namely those built to handle basic communication with other hardware like a DAC or an SSD1306 display, are invaluable time savers in embedded C++. A full list of dependencies is available in the `platformio.ini` file in this repository.
 
