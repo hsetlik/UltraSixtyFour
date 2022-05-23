@@ -14,6 +14,7 @@ The Ultra 64 is a powerful hardware step sequencer built to Eurorack standards. 
     - [**Peripheral hardware**](#peripheral-hardware)
   - [**Software**](#software)
     - [**Approach and hardware considerations**](#approach-and-hardware-considerations)
+  - [**Develoment environment and dependencies**](#develoment-environment-and-dependencies)
     - [**Interesting/challenging bits**](#interestingchallenging-bits)
 
 ## **Controls and features**
@@ -67,6 +68,10 @@ The Ultra 64 uses relatively little peripheral hardware, all of which is connect
 ### **Approach and hardware considerations**
 
 Having never used an ESP32 before, my assumption was to treat the board more or less like an Arduino with a bit more oomph. As I got more familiar with the device and read up a bit on modern embedded C++, I took an approach more in line with the object-oriented modern C++ paradigm I'm used to from writing C++ for desktop systems. After coming to understand the ESP32 a bit better, I took advantage of dynamic STL containers and other more memory-intensive code, which helped to improve much of the firmware's efficiency and readability by avoiding many of the headaches that come with C-style arrays and non-RAII memory management with the `new` and `delete` keywords.
+
+## **Develoment environment and dependencies**
+
+All this code was written in Visual Studio Code with the [PlatformIO IDE](https://platformio.org/) extension, which handles serial communication, flashing firmware to the microcontroller, and managing devices and bootloaders. PlatformIO also comes with a very powerful package manager and dependency handling system which makes working with C++ libraries uncharacteristically easy. I make a point of limiting dependencies and not relying on a laundry list of 3rd-party libraries. But certain libraries, namely those built to handle basic communication with other hardware like a DAC or an SSD1306 display, are invaluable time savers in embedded C++. A full list of dependencies is available in the `platformio.ini` file in this repository.
 
 ### **Interesting/challenging bits**
 
