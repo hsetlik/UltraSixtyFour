@@ -1,9 +1,9 @@
 #ifndef SEQUENCER_H
 #define SEQUENCER_H
 #include <Adafruit_NeoPixel.h>
-#include <MCP48xx.h>
 #include <Wire.h>
 #include <Adafruit_SSD1306.h>
+#include <MCP_DAC.h>
 #include "Sequence.h"
 #include "OLEDLog.h"
 #include "BootAnimation.h"
@@ -88,9 +88,9 @@ enum ButtonId
 class Sequencer
 {
 private:
-    MCP4822 dac1;
+    //MCP4822 dac1;
 
-    MCP4822 dac2;
+    //MCP4822 dac2;
 
     Adafruit_NeoPixel pixels;
 
