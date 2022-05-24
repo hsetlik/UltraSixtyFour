@@ -27,14 +27,14 @@
 #define BUTTONS2 39
 
 //sequence inputs
-#define CV_IN 12
+#define CV_IN 21
 #define TRIG_IN 13
 
 //DAC/SPI pins
 #define MOSI 23
 #define SCK 18
-#define DAC1 1
-#define DAC2 3
+#define DAC1 22
+#define DAC2 19
 
 //I2C pins
 #define SDA 17
@@ -42,7 +42,7 @@
 
 //gate outputs
 #define GATE1 16
-#define GATE2 1
+#define GATE2 4
 #define GATE3 2
 #define GATE4 15
 
