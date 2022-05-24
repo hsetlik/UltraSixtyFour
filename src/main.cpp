@@ -190,9 +190,8 @@ void setup()
   Serial.begin(115200);
   seq.reset(new Sequencer());
   initButtons();
-  OLEDLog::println("Sequencer initialized. . .");
   initWifi();
-  Serial.println("Wifi Initialized");
+  OLEDLog::println("Wifi Initialized");
 }
 
 unsigned long idx = 0;
@@ -202,6 +201,4 @@ void loop()
   seq->loop();
   pollEncoders();
   checkButtons();
-  //groupA.update();
-  //groupB.update();
 }

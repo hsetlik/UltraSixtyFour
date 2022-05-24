@@ -24,7 +24,6 @@ Sequencer::Sequencer() : pixels(24, PIXEL_PIN, NEO_RGB + NEO_KHZ800),
     }
     display.display();
     Serial.println("Display started");
-    /*
     pinMode(GATE1, OUTPUT);
     pinMode(GATE2, OUTPUT);
     pinMode(GATE3, OUTPUT);
@@ -43,8 +42,7 @@ Sequencer::Sequencer() : pixels(24, PIXEL_PIN, NEO_RGB + NEO_KHZ800),
     dac2.setGainA(MCP4822::High);
     dac2.setGainB(MCP4822::High);
     Serial.println("Initialized DACs");
-    */
-    // set up display  //runPixelTest();
+
     Serial.println("Sequencer initialized");
     bootAnim.start();
 }
@@ -276,7 +274,6 @@ void Sequencer::updateLeds()
         {
             setStepPixel(i, colors[i]);
         }
-
         //get the track and page colors
         auto trackColors = currentSequence.currentTrackColors();
         trackColors = trackClearAnim.process(trackColors);
@@ -293,7 +290,15 @@ void Sequencer::updateLeds()
 
 void Sequencer::updateDACs()
 {
-
+    for (byte i = 0; i < 4; ++i)
+    {
+        auto& step = currentSequence.tracks[i].steps[currentSequence.currentStep];
+        if (step.gate)
+        {
+            auto level = levelForMidiNote(step.midiNumber);
+            setLevelForTrack(i, level);
+        }
+    }
 }
 
 void Sequencer::updateGates()
@@ -306,14 +311,42 @@ void Sequencer::updateDisplay()
 
 }
 
-void Sequencer::runPixelTest()
+void Sequencer::setLevelForTrack(uint8_t trk, uint16_t mV)
 {
-    auto col = SeqColors::mixolydianHsv.asRgb();
-    for(auto i = 0; i < 16; ++i)
+    switch (trk)
     {
-        pixels.clear();
-        setStepPixel(i, col);
-        pixels.show();
-        delay(250);
+    case 0:
+    {
+        dac2.setVoltageA(mV);
+        dac2.updateDAC();
+        if (mV > 0)
+            OLEDLog::println("Channel 1: " + std::to_string(mV));
+        break;
+    }
+       
+    case 1:
+    {
+        dac2.setVoltageB(mV);
+        if (mV > 0)
+            OLEDLog::println("Channel 2: " + std::to_string(mV));
+        dac2.updateDAC();
+        break;
+    }
+    case 2:
+    {
+        dac1.setVoltageA(mV);
+        if (mV > 0)
+            OLEDLog::println("Channel 3 updated to: " + std::to_string(mV));
+        dac1.updateDAC();
+        break;
+    }
+    case 3:
+        dac1.setVoltageB(mV);
+        if (mV > 0)
+            OLEDLog::println("Channel 4 updated to: " + std::to_string(mV));
+        dac1.updateDAC();
+        break;
+    default:
+        break;
     }
 }

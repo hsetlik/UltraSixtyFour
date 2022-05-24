@@ -58,6 +58,15 @@
 
 #define MAX_REFRESH_HZ 60
 
+/*
+    We have DACs with a max output of 3.3v being fed to an amplifier with a gain of 3.2, so the final range of the CV output is 0-10.56 volts.
+    A halfstep corresponds to one twelfth of a volt or 83.33333mV. 
+    Since the MCP4822 is a 12-bit DAC, we control it with a number between 0 and 4095 and therefore the increment is ~2.579mV.
+    Therefore, a half-step is represented by a difference of about 32.3 in the input integer
+*/
+
+#define HALFSTEP_INCREMENT 32.3123f
+
 //Corresponds to index passed by button library in main.cpp
 enum ButtonId
 {
@@ -95,8 +104,11 @@ private:
 
     ApplyPageAnimation applyPageAnim;
 
-    
-
+    static uint16_t levelForMidiNote(uint16_t note)
+    {
+        return note * HALFSTEP_INCREMENT;
+    }
+    void setLevelForTrack(uint8_t trk, uint16_t mV);
     void setStepPixel(byte idx, uint32_t color);
     void setPagePixel(byte idx, uint32_t color);
     void setTrackPixel(byte idx, uint32_t color);
@@ -107,8 +119,6 @@ private:
     void updateDACs();
     void updateGates();
     void updateDisplay();
-// testing/debugging
-    void runPixelTest();
 public:
     Sequencer();
     void loop();
