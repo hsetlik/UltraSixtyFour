@@ -68,12 +68,15 @@ bool SpiffsEnvironment::loadSequence(std::string name)
         len -= toRead;
     }
     Serial.println();
-    //put buffer into JSON document
+    //but buffer into JSON document
     SeqJson doc;
-    deserializeJson(doc, buffer, file.size());
-    
-
-
+    if (!deserializeJson(doc, buffer, file.size()).Ok)
+    {
+        Serial.println("Could not deserialize JSON!");
+        return false;
+    }
+    seq->currentSequence.reset(new Sequence(doc));
+    return true;
 }
 // call this in the main loop to check if it's time to autosave the current sequence
 void SpiffsEnvironment::checkAutosave()

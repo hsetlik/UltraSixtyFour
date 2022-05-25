@@ -48,6 +48,19 @@ lastMicros(0)
     initDummySequence();
 }
 
+Sequence::Sequence(JsonDocument& doc) : 
+currentStep(0),
+currentTrack(0),
+selectedStep(0),
+isPlaying(false),
+tempo(120),
+periodMicros(0),
+microsIntoPeriod(0),
+lastMicros(0)
+{
+    //TODO: parse the json document
+}
+
 void Sequence::checkAdvance()
 {
     //TODO

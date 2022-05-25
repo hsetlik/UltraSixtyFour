@@ -23,6 +23,7 @@
 #include <array>
 #include <vector>
 
+// # of bytes to allocate for 1 sequence worth of JSON data
 #define SEQ_BYTES 12288
 typedef StaticJsonDocument<SEQ_BYTES> SeqJson;
 //the microcontroller pins attached to each gate output
@@ -59,6 +60,7 @@ class Sequence
 {
 public:
     Sequence();
+    Sequence(JsonDocument& doc);
     std::array<Track, NUM_TRACKS> tracks;
     uint8_t currentStep;
     uint8_t currentTrack;
