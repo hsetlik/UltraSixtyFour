@@ -1,8 +1,6 @@
 #include "Sequencer.h"
 
 Sequencer::Sequencer() : pixels(24, PIXEL_PIN, NEO_RGB + NEO_KHZ800),
-                         dac1(DAC1),
-                         dac2(DAC2),
                          display(SCREEN_WIDTH, SCREEN_HEIGHT)
 {
     Serial.println("Creating sequencer");
@@ -28,21 +26,20 @@ Sequencer::Sequencer() : pixels(24, PIXEL_PIN, NEO_RGB + NEO_KHZ800),
     pinMode(GATE2, OUTPUT);
     pinMode(GATE3, OUTPUT);
     pinMode(GATE4, OUTPUT);
+
+    dac1.selectVSPI();
+    dac1.begin(DAC1);
+    Serial.println("DAC 1 initialized");
+    dac2.selectVSPI();
+    dac2.begin(DAC2);
+    Serial.println("DAC 2 initialized");
+
+    dac1.analogWrite(500, 0);
+    dac1.analogWrite(900, 1);
+    dac2.analogWrite(1800, 0);
+    dac2.analogWrite(2000, 1);
+    Serial.println("DAC outputs set");
   
-    
-    dac1.init();
-    dac1.turnOnChannelA();
-    dac1.turnOnChannelB();
-    dac1.setGainA(MCP4822::High);
-    dac1.setGainB(MCP4822::High);
-
-    dac2.init();
-    dac2.turnOnChannelA();
-    dac2.turnOnChannelB();
-    dac2.setGainA(MCP4822::High);
-    dac2.setGainB(MCP4822::High);
-    Serial.println("Initialized DACs");
-
     Serial.println("Sequencer initialized");
     bootAnim.start();
 }
@@ -317,35 +314,21 @@ void Sequencer::setLevelForTrack(uint8_t trk, uint16_t mV)
     {
     case 0:
     {
-        dac2.setVoltageA(mV);
-        dac2.updateDAC();
-        if (mV > 0)
-            OLEDLog::println("Channel 1: " + std::to_string(mV));
         break;
     }
-       
+
     case 1:
     {
-        dac2.setVoltageB(mV);
-        if (mV > 0)
-            OLEDLog::println("Channel 2: " + std::to_string(mV));
-        dac2.updateDAC();
         break;
     }
     case 2:
     {
-        dac1.setVoltageA(mV);
-        if (mV > 0)
-            OLEDLog::println("Channel 3 updated to: " + std::to_string(mV));
-        dac1.updateDAC();
         break;
     }
     case 3:
-        dac1.setVoltageB(mV);
-        if (mV > 0)
-            OLEDLog::println("Channel 4 updated to: " + std::to_string(mV));
-        dac1.updateDAC();
+    {
         break;
+    }
     default:
         break;
     }

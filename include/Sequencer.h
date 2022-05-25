@@ -1,7 +1,7 @@
 #ifndef SEQUENCER_H
 #define SEQUENCER_H
 #include <Adafruit_NeoPixel.h>
-#include <MCP48xx.h>
+#include <MCP_DAC.h>
 #include <Wire.h>
 #include <Adafruit_SSD1306.h>
 #include "Sequence.h"
