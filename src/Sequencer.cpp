@@ -2,6 +2,8 @@
 
 Sequencer::Sequencer() : pixels(24, PIXEL_PIN, NEO_RGB + NEO_KHZ800),
                          display(SCREEN_WIDTH, SCREEN_HEIGHT),
+                         dac1(DAC1),
+                         dac2(DAC2),
                          currentSequence(new Sequence())
 {
     Serial.println("Creating sequencer");
@@ -28,20 +30,22 @@ Sequencer::Sequencer() : pixels(24, PIXEL_PIN, NEO_RGB + NEO_KHZ800),
     pinMode(GATE3, OUTPUT);
     pinMode(GATE4, OUTPUT);
 
-    dac1.selectVSPI();
-    dac1.begin(DAC1);
-    /*
-    OLEDLog::println("DAC1 is initialized: " + dac1.isActive() ? "ACTIVE" : "INACTIVE");
-    delay(100);
-    OLEDLog::println("DAC1 has gain: " + dac1.getGain());
-    delay(100);
-    OLEDLog::println("DAC1 has SPI speed: " + dac1.getSPIspeed());
-    delay(100);
-    */
-    dac2.selectVSPI();
-    dac2.begin(DAC2); 
-    Serial.println("Initialized DACs");
+    dac1.init();
 
+    dac1.turnOnChannelA();
+    dac1.turnOnChannelB();
+
+    dac1.setGainA(MCP4822::High);
+    dac1.setGainB(MCP4822::High);
+
+
+    dac2.init();
+
+    dac2.turnOnChannelA();
+    dac2.turnOnChannelB();
+
+    dac2.setGainA(MCP4822::High);
+    dac2.setGainB(MCP4822::High);
 
     Serial.println("Sequencer initialized");
     bootAnim.start();
@@ -311,44 +315,39 @@ void Sequencer::updateDisplay()
 
 }
 
-void Sequencer::updateDAC (MCP4822* dac, uint16_t value, uint8_t channel)
+void Sequencer::checkDAC(uint16_t value, uint8_t track, uint8_t channel, MCP4822* dac)
 {
-    if (value != dac->lastValue(channel))
-        {
-            auto str = "Last: " + std::to_string(dac->lastValue()) + " New: " + std::to_string(value);
-            OLEDLog::println(str);
-            dac->analogWrite(value, channel);
-        }
-        
+    if (trackLastValue[track] != value)
+    {
+        trackLastValue[track] = value;
+        dac->setVoltage(value, channel > 0 ? MCP4822::A : MCP4822::B);
+        dac->updateDAC();
+    }
 }
 
 void Sequencer::setLevelForTrack(uint8_t trk, uint16_t mV)
 {
     switch (trk)
     {
-    case 0:
-    {
-        updateDAC(&dac1, mV, 0);
-        break;
-    }
-    case 1:
-    {
-        updateDAC(&dac1, mV, 1);
-   
-        break;
-    }
-    case 2:
-    {
-        updateDAC(&dac2, mV, 0);
-
-        break;
-    }
-    case 3:
-    {
-        updateDAC(&dac2, mV, 1);
-        break;
-    }
-    default:
-        break;
+        case 0:
+        {
+            checkDAC(mV, trk, 0, &dac1);
+            break;
+        }
+        case 1:
+        {
+            checkDAC(mV, trk, 1, &dac1);
+            break;
+        }
+        case 2:
+        {
+            checkDAC(mV, trk, 0, &dac2);
+            break;
+        }
+        case 3:
+        {
+            checkDAC(mV, trk, 1, &dac2);
+            break;
+        }
     }
 }

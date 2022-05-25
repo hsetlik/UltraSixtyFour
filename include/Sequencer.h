@@ -1,7 +1,7 @@
 #ifndef SEQUENCER_H
 #define SEQUENCER_H
 #include <Adafruit_NeoPixel.h>
-#include <MCP_DAC.h>
+#include <MCP48xx.h>
 #include <Wire.h>
 #include <Adafruit_SSD1306.h>
 #include "Sequence.h"
@@ -122,7 +122,9 @@ private:
     void updateGates();
     void updateDisplay();
 
-    static void updateDAC (MCP4822* dac, uint16_t value, uint8_t channel=0);
+    void checkDAC(uint16_t value, uint8_t track, uint8_t channel, MCP4822* dac);
+//keep track of last DAC outputs
+    uint16_t trackLastValue[4] = {0};
 public:
     Sequencer();
     void loop();
