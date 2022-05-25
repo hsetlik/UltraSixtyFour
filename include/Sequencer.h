@@ -1,7 +1,7 @@
 #ifndef SEQUENCER_H
 #define SEQUENCER_H
 #include <Adafruit_NeoPixel.h>
-#include <MCP48xx.h>
+#include <MCP_DAC.h>
 #include <Wire.h>
 #include <Adafruit_SSD1306.h>
 #include "Sequence.h"
@@ -9,6 +9,7 @@
 #include "BootAnimation.h"
 #include "TrackClearAnimation.h"
 #include "ApplyPageAnimation.h"
+#include <memory>
 
 
 // Pin definitions based on 30-pin ESP32 Devkit V1 pinout
@@ -88,6 +89,7 @@ enum ButtonId
 class Sequencer
 {
 private:
+    friend class SpiffsEnvironment;
     MCP4822 dac1;
 
     MCP4822 dac2;
@@ -96,7 +98,7 @@ private:
 
     Adafruit_SSD1306 display;
 
-    Sequence currentSequence;
+    std::unique_ptr<Sequence> currentSequence;
 
     BootAnimation bootAnim;
 
@@ -119,6 +121,8 @@ private:
     void updateDACs();
     void updateGates();
     void updateDisplay();
+
+    static void updateDAC (MCP4822* dac, uint16_t value, uint8_t channel=0);
 public:
     Sequencer();
     void loop();

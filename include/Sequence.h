@@ -110,5 +110,6 @@ private:
     uint8_t pageForStep(uint8_t step);
     std::array<Step*, PAGE_LENGTH> pageSteps(uint8_t step);
     std::array<Step*, PAGE_LENGTH> getPage(uint8_t page);
+    void initDummySequence();
 };
 #endif

@@ -1,9 +1,8 @@
 #include "Sequencer.h"
 
 Sequencer::Sequencer() : pixels(24, PIXEL_PIN, NEO_RGB + NEO_KHZ800),
-                         dac1(DAC1),
-                         dac2(DAC2),
-                         display(SCREEN_WIDTH, SCREEN_HEIGHT)
+                         display(SCREEN_WIDTH, SCREEN_HEIGHT),
+                         currentSequence(new Sequence())
 {
     Serial.println("Creating sequencer");
     
@@ -28,20 +27,21 @@ Sequencer::Sequencer() : pixels(24, PIXEL_PIN, NEO_RGB + NEO_KHZ800),
     pinMode(GATE2, OUTPUT);
     pinMode(GATE3, OUTPUT);
     pinMode(GATE4, OUTPUT);
-  
-    
-    dac1.init();
-    dac1.turnOnChannelA();
-    dac1.turnOnChannelB();
-    dac1.setGainA(MCP4822::High);
-    dac1.setGainB(MCP4822::High);
 
-    dac2.init();
-    dac2.turnOnChannelA();
-    dac2.turnOnChannelB();
-    dac2.setGainA(MCP4822::High);
-    dac2.setGainB(MCP4822::High);
+    dac1.selectVSPI();
+    dac1.begin(DAC1);
+    /*
+    OLEDLog::println("DAC1 is initialized: " + dac1.isActive() ? "ACTIVE" : "INACTIVE");
+    delay(100);
+    OLEDLog::println("DAC1 has gain: " + dac1.getGain());
+    delay(100);
+    OLEDLog::println("DAC1 has SPI speed: " + dac1.getSPIspeed());
+    delay(100);
+    */
+    dac2.selectVSPI();
+    dac2.begin(DAC2); 
     Serial.println("Initialized DACs");
+
 
     Serial.println("Sequencer initialized");
     bootAnim.start();
@@ -49,7 +49,7 @@ Sequencer::Sequencer() : pixels(24, PIXEL_PIN, NEO_RGB + NEO_KHZ800),
 
 void Sequencer::loop()
 {
-    currentSequence.checkAdvance();
+    currentSequence->checkAdvance();
     updateLeds();
     updateDisplay();
     updateDACs();
@@ -71,27 +71,27 @@ void Sequencer::buttonPressed(uint8_t id)
         }
         case Play:
         {
-            currentSequence.isPlaying = !currentSequence.isPlaying;
+            currentSequence->isPlaying = !currentSequence->isPlaying;
             break;
         }
         case Track1:
         {
-            currentSequence.currentTrack = 0;
+            currentSequence->currentTrack = 0;
             break;
         }
         case Track2:
         {
-            currentSequence.currentTrack = 1;
+            currentSequence->currentTrack = 1;
             break;
         }
         case Track3:
         {
-            currentSequence.currentTrack = 2;
+            currentSequence->currentTrack = 2;
             break;
         }
         case Track4:
         {
-            currentSequence.currentTrack = 3;
+            currentSequence->currentTrack = 3;
             break;
         }
         case E1:
@@ -104,7 +104,7 @@ void Sequencer::buttonPressed(uint8_t id)
         }
         case E3:
         {
-            currentSequence.toggleSelectedGate();
+            currentSequence->toggleSelectedGate();
             break;
         }
         case E4:
@@ -113,12 +113,12 @@ void Sequencer::buttonPressed(uint8_t id)
         }
         case PageL:
         {
-            currentSequence.shiftPage(true);
+            currentSequence->shiftPage(true);
             break;
         }
         case PageR:
         {
-            currentSequence.shiftPage(false);
+            currentSequence->shiftPage(false);
             break;
         }
         default:
@@ -146,28 +146,28 @@ void Sequencer::buttonHeld(uint8_t id)
         {
             trackClearAnim.track = 0;
             trackClearAnim.start();
-            currentSequence.clearTrack(0);
+            currentSequence->clearTrack(0);
             break;
         }
         case Track2:
         {
             trackClearAnim.track = 1;
             trackClearAnim.start();
-            currentSequence.clearTrack(1);
+            currentSequence->clearTrack(1);
             break;
         }
         case Track3:
         {
             trackClearAnim.track = 2;
             trackClearAnim.start();
-            currentSequence.clearTrack(2);
+            currentSequence->clearTrack(2);
             break;
         }
         case Track4:
         {
             trackClearAnim.track = 2;
             trackClearAnim.start();
-            currentSequence.clearTrack(3);
+            currentSequence->clearTrack(3);
             break;
         }
         case E1:
@@ -188,7 +188,7 @@ void Sequencer::buttonHeld(uint8_t id)
         }
         case PageL:
         {
-            currentSequence.applyCurrentPage();
+            currentSequence->applyCurrentPage();
             applyPageAnim.start();
             break;
         }
@@ -210,17 +210,17 @@ void Sequencer::encoderTurned(uint8_t id, bool dir)
     {
         case 0:
         {
-            currentSequence.shiftTempo(dir);
+            currentSequence->shiftTempo(dir);
             break;
         }
         case 1:
         {
-            currentSequence.shiftSelected(dir);
+            currentSequence->shiftSelected(dir);
             break;
         }
         case 2:
         {
-            currentSequence.shiftNote(dir);
+            currentSequence->shiftNote(dir);
             break;
         }
         case 3:
@@ -268,16 +268,16 @@ void Sequencer::updateLeds()
         pixels.clear();
         ledLastUpdated = now;
         //set the step pixel colors
-        auto colors = currentSequence.currentStepColors();
+        auto colors = currentSequence->currentStepColors();
         colors = bootAnim.process(colors);
         for(byte i = 0; i < PAGE_LENGTH; ++i)
         {
             setStepPixel(i, colors[i]);
         }
         //get the track and page colors
-        auto trackColors = currentSequence.currentTrackColors();
+        auto trackColors = currentSequence->currentTrackColors();
         trackColors = trackClearAnim.process(trackColors);
-        auto pageColors = currentSequence.currentPageColors();
+        auto pageColors = currentSequence->currentPageColors();
         pageColors = applyPageAnim.process(pageColors);
         for(byte i = 0; i < 4; ++i)
         {
@@ -292,7 +292,7 @@ void Sequencer::updateDACs()
 {
     for (byte i = 0; i < 4; ++i)
     {
-        auto& step = currentSequence.tracks[i].steps[currentSequence.currentStep];
+        auto& step = currentSequence->tracks[i].steps[currentSequence->currentStep];
         if (step.gate)
         {
             auto level = levelForMidiNote(step.midiNumber);
@@ -311,41 +311,43 @@ void Sequencer::updateDisplay()
 
 }
 
+void Sequencer::updateDAC (MCP4822* dac, uint16_t value, uint8_t channel)
+{
+    if (value != dac->lastValue(channel))
+        {
+            auto str = "Last: " + std::to_string(dac->lastValue()) + " New: " + std::to_string(value);
+            OLEDLog::println(str);
+            dac->analogWrite(value, channel);
+        }
+        
+}
+
 void Sequencer::setLevelForTrack(uint8_t trk, uint16_t mV)
 {
     switch (trk)
     {
     case 0:
     {
-        dac2.setVoltageA(mV);
-        dac2.updateDAC();
-        if (mV > 0)
-            OLEDLog::println("Channel 1: " + std::to_string(mV));
+        updateDAC(&dac1, mV, 0);
         break;
     }
-       
     case 1:
     {
-        dac2.setVoltageB(mV);
-        if (mV > 0)
-            OLEDLog::println("Channel 2: " + std::to_string(mV));
-        dac2.updateDAC();
+        updateDAC(&dac1, mV, 1);
+   
         break;
     }
     case 2:
     {
-        dac1.setVoltageA(mV);
-        if (mV > 0)
-            OLEDLog::println("Channel 3 updated to: " + std::to_string(mV));
-        dac1.updateDAC();
+        updateDAC(&dac2, mV, 0);
+
         break;
     }
     case 3:
-        dac1.setVoltageB(mV);
-        if (mV > 0)
-            OLEDLog::println("Channel 4 updated to: " + std::to_string(mV));
-        dac1.updateDAC();
+    {
+        updateDAC(&dac2, mV, 1);
         break;
+    }
     default:
         break;
     }
