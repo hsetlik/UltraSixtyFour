@@ -31,8 +31,6 @@
 #define TRIG_IN 13
 
 //DAC/SPI pins
-#define MOSI 23
-#define SCK 18
 #define DAC1 22
 #define DAC2 19
 

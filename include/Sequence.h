@@ -22,6 +22,7 @@
 #include <string>
 #include <array>
 #include <vector>
+#include <SPI.h>
 
 #define SEQ_BYTES 12288
 typedef StaticJsonDocument<SEQ_BYTES> SeqJson;
@@ -110,5 +111,6 @@ private:
     uint8_t pageForStep(uint8_t step);
     std::array<Step*, PAGE_LENGTH> pageSteps(uint8_t step);
     std::array<Step*, PAGE_LENGTH> getPage(uint8_t page);
+    void initDummySequence();
 };
 #endif

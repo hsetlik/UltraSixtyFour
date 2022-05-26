@@ -27,20 +27,24 @@ Sequencer::Sequencer() : pixels(24, PIXEL_PIN, NEO_RGB + NEO_KHZ800),
     pinMode(GATE3, OUTPUT);
     pinMode(GATE4, OUTPUT);
 
-    dac1.selectVSPI();
-    dac1.begin(DAC1);
-    Serial.println("DAC 1 initialized");
     dac2.selectVSPI();
+    dac2.setGain(2);
     dac2.begin(DAC2);
+    dac2.analogWrite(3000, 0);
+    dac2.analogWrite(4000, 1);
     Serial.println("DAC 2 initialized");
 
-    dac1.analogWrite(500, 0);
-    dac1.analogWrite(900, 1);
-    dac2.analogWrite(1800, 0);
-    dac2.analogWrite(2000, 1);
+
+    dac1.selectVSPI();
+    dac1.setGain(2);
+    dac1.begin(DAC1);
+    dac1.analogWrite(2000, 0);
+    dac1.analogWrite(4000, 1);
+    Serial.println("DAC 1 initialized");
+
     Serial.println("DAC outputs set");
-  
-    Serial.println("Sequencer initialized");
+    std::string maxStr = "Max value is: " + std::to_string(dac1.maxValue());
+    Serial.println(maxStr.c_str());
     bootAnim.start();
 }
 
@@ -200,9 +204,9 @@ void Sequencer::buttonHeld(uint8_t id)
 
 void Sequencer::encoderTurned(uint8_t id, bool dir)
 {
-    Serial.print("Encoder ");
-    Serial.print(id);
-    Serial.print(" turned\n");
+    //Serial.print("Encoder ");
+    //Serial.print(id);
+    //Serial.print(" turned\n");
     switch (id)
     {
         case 0:
@@ -310,10 +314,22 @@ void Sequencer::updateDisplay()
 
 void Sequencer::setLevelForTrack(uint8_t trk, uint16_t mV)
 {
+
     switch (trk)
     {
     case 0:
     {
+        /*
+        if (dac1.lastValue(0) != mV)
+        {
+            OLEDLog::println("Last: " + std::to_string(dac1.lastValue()) + " New: " + std::to_string(mV));
+            if(!dac1.analogWrite(mV, 0))
+            {
+                Serial.println("Failed to update DAC!");
+            }
+        }
+        */
+           
         break;
     }
 

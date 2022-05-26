@@ -45,6 +45,7 @@ microsIntoPeriod(0),
 lastMicros(0)
 {
     setTempo(tempo);
+    initDummySequence();
 }
 
 void Sequence::checkAdvance()
@@ -308,4 +309,19 @@ std::array<Step*, PAGE_LENGTH> Sequence::getPage(uint8_t page)
         output[i] = &tracks[currentTrack].steps[offset + i];
     }
     return output;
+}
+    
+void Sequence::initDummySequence()
+{
+    for (byte i = 0; i < 4; i++)
+    {
+        auto page = getPage(i);
+        const byte root = 27;
+        for (uint8_t p = 0; p < 4; ++p)
+        {
+            auto& step = *page[p * 4];
+            step.gate = true;
+            step.midiNumber = root + (p * 12);
+        }
+    }
 }
