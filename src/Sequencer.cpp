@@ -1,7 +1,8 @@
 #include "Sequencer.h"
 
 Sequencer::Sequencer() : pixels(24, PIXEL_PIN, NEO_RGB + NEO_KHZ800),
-                         display(SCREEN_WIDTH, SCREEN_HEIGHT)
+                         display(SCREEN_WIDTH, SCREEN_HEIGHT),
+                         quantizeMode(false)
 {
     Serial.println("Creating sequencer");
     
@@ -109,6 +110,7 @@ void Sequencer::buttonPressed(uint8_t id)
         }
         case E4:
         {
+            quantizeMode != quantizeMode;
             break;
         }
         case PageL:
@@ -210,7 +212,10 @@ void Sequencer::encoderTurned(uint8_t id, bool dir)
     {
         case 0:
         {
-            currentSequence.shiftTempo(dir);
+            if (!quantizeMode)
+                currentSequence.shiftTempo(dir);
+            else
+                currentSequence.shiftQuantType(dir);
             break;
         }
         case 1:
@@ -220,7 +225,10 @@ void Sequencer::encoderTurned(uint8_t id, bool dir)
         }
         case 2:
         {
-            currentSequence.shiftNote(dir);
+            if (!quantizeMode)
+                currentSequence.shiftNote(dir);
+            else
+                currentSequence.shiftQuantRoot(dir);
             break;
         }
         case 3:
@@ -236,8 +244,7 @@ void Sequencer::setStepPixel(byte idx, uint32_t color)
 {
     if (idx > 7)
     {
-        auto diff = idx - 7;
-        idx = 16 - diff;
+        idx = 16 - (idx - 7);
     }
     pixels.setPixelColor(idx, color);
 }
@@ -295,7 +302,7 @@ void Sequencer::updateDACs()
         auto& step = currentSequence.tracks[i].steps[currentSequence.currentStep];
         if (step.gate)
         {
-            auto level = levelForMidiNote(step.midiNumber);
+            auto level = levelForMidiNote(currentSequence.tracks[i].quantizedMidiAt(currentSequence.currentStep));
             setLevelForTrack(i, level);
         }
     }

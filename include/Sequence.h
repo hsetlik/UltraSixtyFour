@@ -16,13 +16,16 @@
 
 
 #include <Arduino.h>
-#include "Adafruit_NeoPixel.h"
+#include <Adafruit_NeoPixel.h>
 #include "Hsv.h"
+#include "Quantize.h"
 #include <ArduinoJson.h>
 #include <string>
 #include <array>
 #include <vector>
 #include <SPI.h>
+
+using namespace Quantize;
 
 #define SEQ_BYTES 12288
 typedef StaticJsonDocument<SEQ_BYTES> SeqJson;
@@ -35,11 +38,12 @@ typedef std::vector<uint32_t> ColorState;
 //One step in a sequence track
 struct Step
 {
-    Step();
+public:
+    Step(uint8_t midiNum=40, bool gate=false, uint8_t length=80);
     uint8_t midiNumber;
     bool gate;
     //gate length as a percentage of the length of one step 
-    int length;
+    uint8_t length;
     void addToJsonArray(JsonArray& arr);
 };
 
@@ -52,7 +56,9 @@ struct Track
     //returns first the step at or before idx which has its gate toggled on
     int lastOnStep(uint8_t idx);
     void addNestedStepsArray(JsonArray& arr);
-    
+    uint8_t quantizedMidiAt(uint8_t step);
+    TrackQuantizer quantizer;
+
 };
 //All the data for playback/saving a sequence
 
@@ -68,10 +74,6 @@ public:
     //check whether enough time has elapsed to move to the next step. Call this on every loop before updating hardware
     void checkAdvance();
     //Update the 16-led display and the 4 page LEDs to reflect the current sequence
-    //Set the gates
-    void updateGates();
-    //update the DAC voltages
-    void updateMvs();
     //set the tempo and calcualte the period of each step
     void setTempo(int t);
     int getTempo() {return tempo;}

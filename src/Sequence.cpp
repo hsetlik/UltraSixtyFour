@@ -1,7 +1,7 @@
 #include "Sequence.h"
 
 //=====================STEP==============================
-Step::Step() : midiNumber(69), gate(false), length(80)
+Step::Step(uint8_t m, bool g, uint8_t l) : midiNumber(m), gate(g), length(l)
 {
 }
 
@@ -32,6 +32,12 @@ void Track::addNestedStepsArray(JsonArray& arr)
     {
         steps[s].addToJsonArray(jsonSteps);
     }
+}
+    
+
+uint8_t Track::quantizedMidiAt(uint8_t step)
+{
+    return quantizer.processNote(steps[step].midiNumber);
 }
 //=====================SEQUENCE==============================
 Sequence::Sequence() :
@@ -64,43 +70,6 @@ void Sequence::advance()
     if (isPlaying)
         currentStep = (currentStep + 1) % SEQ_LENGTH;
 }
-
-void Sequence::updateGates()
-{
-    //TODO
-    for (uint8_t i = 0; i < NUM_TRACKS; ++i)
-    {
-        //get the last step which was triggered
-        auto& trk = tracks[i];
-        auto lastOn = trk.lastOnStep(currentStep);
-        auto now = micros();
-        //Do nothing if the track is empty
-        if (lastOn == -1)
-            continue;
-        auto stepStart = now - microsIntoPeriod;
-        //if this is a gate from a previous step we need to offset by period * num. steps apart
-        if (lastOn != currentStep)
-        {
-            auto offset = (unsigned long)abs(currentStep - lastOn) * periodMicros;
-            stepStart -= offset;
-        }
-        //length of the gate in microseconds
-        auto length = (unsigned long)(periodMicros * (float)(trk.steps[lastOn].length / 100.0f));
-        auto gateOver = now >= stepStart + length;
-        //Turn on the gate as needed
-        if (lastOn == currentStep && !gateOver)
-        {
-            trk.gateHigh = true;
-            digitalWrite(gatePins[i], HIGH);
-        }
-        else if (trk.gateHigh && gateOver) //turn the gate off
-        {
-            trk.gateHigh = false;
-            digitalWrite(gatePins[i], LOW);
-        }
-    }
-}
-
 //Rotary encoder handlers
 void Sequence::shiftSelected(bool dirOrLength)
 {
@@ -144,11 +113,12 @@ void Sequence::shiftGateLength(bool dirOrLength)
 }
 void Sequence::shiftQuantType(bool dirOrLength)
 {
+    tracks[currentTrack].quantizer.shiftMode(dirOrLength);
 
 }
 void Sequence::shiftQuantRoot(bool dirOrLength)
 {
-
+    tracks[currentTrack].quantizer.shiftRoot(dirOrLength);
 }
 
 void Sequence::toggleSelectedGate()
@@ -157,15 +127,12 @@ void Sequence::toggleSelectedGate()
     step.gate = !step.gate;
 }
 
-void Sequence::updateMvs()
-{
-    //TODO
-}
 void Sequence::setTempo(int t)
 {
     tempo = t;
     periodMicros = (unsigned long)(60000000.0f / (float)tempo);
 }
+
 SeqJson Sequence::getJsonDocument(std::string name)
 {
     SeqJson doc;
@@ -198,11 +165,12 @@ uint32_t Sequence::getStepColor(uint8_t idx)
         else
         {
             const float lerpFactor = 0.327f;
-            auto noteColor = Hsv::forMidiNote(tracks[currentTrack].steps[currentStep].midiNumber);
+            auto noteColor = Hsv::forMidiNote(tracks[currentTrack].quantizedMidiAt(idx));
             return Hsv::lerp(lerpFactor, SeqColors::stepColor, noteColor).asRgb();
         } 
     }
-    auto base = SeqColors::pitchColors[step.midiNumber % 12];
+    auto pitch = tracks[currentTrack].quantizedMidiAt(idx);
+    auto base = SeqColors::pitchColors[pitch % 12];
     if (idx == selectedStep)
     {
         Hsv out = {base.h, base.s, 1.0f};
