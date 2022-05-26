@@ -73,6 +73,10 @@ void Sequencer::buttonPressed(uint8_t id)
         case Play:
         {
             currentSequence.isPlaying = !currentSequence.isPlaying;
+            if (currentSequence.isPlaying)
+                dac2.analogWrite(3000, 0);
+            else
+                dac2.analogWrite(500, 0);
             break;
         }
         case Track1:
@@ -268,6 +272,7 @@ void Sequencer::updateLeds()
     and serial communication to the pixels.
     In practice, this works by keeping track of when the LEDs and then checking if enough time has elapsed to update again in the next loop
     */
+
     auto now = millis();
     if (now - ledLastUpdated > 1000 / MAX_REFRESH_HZ)
     {
@@ -323,19 +328,16 @@ void Sequencer::writeToDac(bool useFirst, bool channel, uint16_t value)
     auto *dacToUse = useFirst ? &dac1 : &dac2;
     //don't update redundantly
     if (dacToUse->lastValue() == value)
-        return;
-    //Serial.println("DAC needs updating");
-    uint8_t pin = useFirst ? DAC2_PIN : DAC1_PIN;
-
-    // this ensures no ambiguity about chip select
-    //digitalWrite(unusedPin, HIGH);
-    // make sure the used dac is enabled
-    if (!dacToUse->analogWrite(value, channel))
     {
-        Serial.println("Failed to update DAC variables!");
+        Serial.println("No DAC update needed");
     }
-
-
+    if (dacToUse->isActive())
+    {
+        if (channel)
+            dacToUse->analogWrite(value, 0);
+        else 
+            dacToUse->analogWrite(value, 1);
+    }
 }
 
 void Sequencer::setLevelForTrack(uint8_t trk, uint16_t mV)
