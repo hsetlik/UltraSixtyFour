@@ -29,23 +29,22 @@ Sequencer::Sequencer() : pixels(24, PIXEL_PIN, NEO_RGB + NEO_KHZ800),
 
     dac2.selectVSPI();
     dac2.setGain(2);
-    dac2.begin(DAC2);
+    dac2.begin(DAC2_PIN);
     dac2.analogWrite(3000, 0);
     dac2.analogWrite(4000, 1);
     Serial.println("DAC 2 initialized");
 
-
     dac1.selectVSPI();
     dac1.setGain(2);
-    dac1.begin(DAC1);
-    dac1.analogWrite(2000, 0);
+    dac1.begin(DAC1_PIN);
+    dac1.analogWrite(1000, 0);
     dac1.analogWrite(4000, 1);
     Serial.println("DAC 1 initialized");
-
     Serial.println("DAC outputs set");
     std::string maxStr = "Max value is: " + std::to_string(dac1.maxValue());
     Serial.println(maxStr.c_str());
     bootAnim.start();
+
 }
 
 void Sequencer::loop()
@@ -291,7 +290,7 @@ void Sequencer::updateLeds()
 
 void Sequencer::updateDACs()
 {
-    for (byte i = 0; i < 4; ++i)
+    for (byte i = 0; i < 4; i++)
     {
         auto& step = currentSequence.tracks[i].steps[currentSequence.currentStep];
         if (step.gate)
@@ -312,6 +311,26 @@ void Sequencer::updateDisplay()
 
 }
 
+void Sequencer::writeToDac(bool useFirst, bool channel, uint16_t value)
+{
+    auto *dacToUse = useFirst ? &dac1 : &dac2;
+    //don't update redundantly
+    if (dacToUse->lastValue() == value)
+        return;
+    //Serial.println("DAC needs updating");
+    uint8_t pin = useFirst ? DAC2_PIN : DAC1_PIN;
+
+    // this ensures no ambiguity about chip select
+    //digitalWrite(unusedPin, HIGH);
+    // make sure the used dac is enabled
+    if (!dacToUse->analogWrite(value, channel))
+    {
+        Serial.println("Failed to update DAC variables!");
+    }
+
+
+}
+
 void Sequencer::setLevelForTrack(uint8_t trk, uint16_t mV)
 {
 
@@ -319,30 +338,22 @@ void Sequencer::setLevelForTrack(uint8_t trk, uint16_t mV)
     {
     case 0:
     {
-        /*
-        if (dac1.lastValue(0) != mV)
-        {
-            OLEDLog::println("Last: " + std::to_string(dac1.lastValue()) + " New: " + std::to_string(mV));
-            if(!dac1.analogWrite(mV, 0))
-            {
-                Serial.println("Failed to update DAC!");
-            }
-        }
-        */
-           
+        writeToDac(true, false, mV); 
         break;
     }
-
     case 1:
     {
+        writeToDac(true, true, mV);
         break;
     }
     case 2:
     {
+        writeToDac(false, false, mV);
         break;
     }
     case 3:
     {
+        writeToDac(false, true, mV);
         break;
     }
     default:

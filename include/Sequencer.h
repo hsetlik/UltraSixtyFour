@@ -31,8 +31,8 @@
 #define TRIG_IN 13
 
 //DAC/SPI pins
-#define DAC1 22
-#define DAC2 19
+#define DAC1_PIN 22
+#define DAC2_PIN 12
 
 //I2C pins
 #define SDA 17
@@ -117,6 +117,7 @@ private:
     void updateDACs();
     void updateGates();
     void updateDisplay();
+    void writeToDac(bool useFirst, bool channel, uint16_t value);
 public:
     Sequencer();
     void loop();

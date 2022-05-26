@@ -39,7 +39,7 @@ currentStep(0),
 currentTrack(0),
 selectedStep(0),
 isPlaying(false),
-tempo(120),
+tempo(200),
 periodMicros(0),
 microsIntoPeriod(0),
 lastMicros(0)
