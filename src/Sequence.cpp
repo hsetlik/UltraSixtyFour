@@ -207,16 +207,29 @@ ColorState Sequence::currentPageColors()
 ColorState Sequence::currentTrackColors()
 {
     ColorState arr = {};
-    for(byte i = 0; i < 4; ++i)
+    if (!quantizeMode)
     {
-        if (i == currentTrack)
-            arr.push_back(SeqColors::pitchColors[i].asRgb());
-        else
-            arr.push_back(SeqColors::off.asRgb());
+        for (byte i = 0; i < 4; ++i)
+        {
+            if (i == currentTrack)
+                arr.push_back(SeqColors::pitchColors[i].asRgb());
+            else
+                arr.push_back(SeqColors::off.asRgb());
+        }
     }
+    else
+    {
+       for (byte i = 0; i < 4; i++)
+       {
+           if (i == currentTrack)
+                arr.push_back(SeqColors::pitchColors[tracks[currentTrack].quantizer.getRoot() % 12].asRgb());
+            else
+                arr.push_back(SeqColors::modeColors[tracks[currentTrack].quantizer.getMode()].asRgb());
+       } 
+    }
+
     return arr;
 }
-
 
 void Sequence::applyCurrentPage()
 {

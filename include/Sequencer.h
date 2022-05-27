@@ -118,8 +118,6 @@ private:
     void updateGates();
     void updateDisplay();
     void writeToDac(bool useFirst, bool channel, uint16_t value);
-//modes
-    bool quantizeMode;
 public:
     Sequencer();
     void loop();
