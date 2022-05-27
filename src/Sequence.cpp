@@ -207,16 +207,29 @@ ColorState Sequence::currentPageColors()
 ColorState Sequence::currentTrackColors()
 {
     ColorState arr = {};
-    for(byte i = 0; i < 4; ++i)
+    if (!quantizeMode)
     {
-        if (i == currentTrack)
-            arr.push_back(SeqColors::pitchColors[i].asRgb());
-        else
-            arr.push_back(SeqColors::off.asRgb());
+        for (byte i = 0; i < 4; ++i)
+        {
+            if (i == currentTrack)
+                arr.push_back(SeqColors::pitchColors[i].asRgb());
+            else
+                arr.push_back(SeqColors::off.asRgb());
+        }
     }
+    else
+    {
+       for (byte i = 0; i < 4; i++)
+       {
+           if (i == currentTrack)
+                arr.push_back(SeqColors::pitchColors[tracks[currentTrack].quantizer.getRoot() % 12].asRgb());
+            else
+                arr.push_back(SeqColors::modeColors[tracks[currentTrack].quantizer.getMode()].asRgb());
+       } 
+    }
+
     return arr;
 }
-
 
 void Sequence::applyCurrentPage()
 {
@@ -283,13 +296,26 @@ void Sequence::initDummySequence()
 {
     for (byte i = 0; i < 4; i++)
     {
-        auto page = getPage(i);
-        const byte root = 27;
-        for (uint8_t p = 0; p < 4; ++p)
+        auto& steps = tracks[i].steps;
+        auto root = 40 + i;
+        for(byte s = 0; s < steps.size(); ++i)
         {
-            auto& step = *page[p * 4];
-            step.gate = true;
-            step.midiNumber = root + (p * 12);
+            if (s % 16 == 0)
+            {
+                steps[s].gate = true;
+                steps[s].midiNumber = root;
+            }
+            else if (s % 8 == 0)
+            {
+                steps[s].gate = true;
+                steps[s].midiNumber = root + 12;
+            }
+            else if (s % 4 == 0)
+            {
+                steps[s].gate = true;
+                steps[s].midiNumber = root - 12;
+
+            }
         }
     }
 }
