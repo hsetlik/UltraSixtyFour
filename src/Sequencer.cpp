@@ -40,6 +40,9 @@ Sequencer::Sequencer() : pixels(24, PIXEL_PIN, NEO_RGB + NEO_KHZ800),
     dac1.begin(DAC1_PIN);
     dac1.analogWrite(1000, 0);
     dac1.analogWrite(4000, 1);
+    
+    delay (2000);
+    dac2.analogWrite(500, false);
     Serial.println("DAC 1 initialized");
     Serial.println("DAC outputs set");
     std::string maxStr = "Max value is: " + std::to_string(dac1.maxValue());
@@ -322,19 +325,22 @@ void Sequencer::writeToDac(bool useFirst, bool channel, uint16_t value)
 {
     auto *dacToUse = useFirst ? &dac1 : &dac2;
     //don't update redundantly
-    if (dacToUse->lastValue() == value)
+    if (dacToUse->lastValue(channel) == value)
         return;
     //Serial.println("DAC needs updating");
-    uint8_t pin = useFirst ? DAC2_PIN : DAC1_PIN;
 
     // this ensures no ambiguity about chip select
     //digitalWrite(unusedPin, HIGH);
-    // make sure the used dac is enabled
-    if (!dacToUse->analogWrite(value, channel))
+    // make sure the used dac is enabled!
+    bool success = dacToUse->analogWrite(value, channel);
+    if (!success)
     {
         Serial.println("Failed to update DAC variables!");
+    } else
+    {
+        std::string lStr = "Succeded. lastValue: " + std::to_string(dacToUse->lastValue(channel)) + " value: " + std::to_string(value);
+        Serial.println(lStr.c_str());
     }
-
 
 }
 
@@ -345,22 +351,26 @@ void Sequencer::setLevelForTrack(uint8_t trk, uint16_t mV)
     {
     case 0:
     {
-        writeToDac(true, false, mV); 
+        dac1.analogWrite(mV);
+        //writeToDac(true, false, mV); 
         break;
     }
     case 1:
     {
-        writeToDac(true, true, mV);
+        dac1.analogWrite(mV, 1);
+        //writeToDac(true, true, mV);
         break;
     }
     case 2:
     {
-        writeToDac(false, false, mV);
+        dac2.analogWrite(mV);
+        //writeToDac(false, false, mV);
         break;
     }
     case 3:
     {
-        writeToDac(false, true, mV);
+        dac2.analogWrite(mV, 1);
+        //writeToDac(false, true, mV);
         break;
     }
     default:

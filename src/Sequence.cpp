@@ -281,15 +281,37 @@ std::array<Step*, PAGE_LENGTH> Sequence::getPage(uint8_t page)
     
 void Sequence::initDummySequence()
 {
-    for (byte i = 0; i < 4; i++)
-    {
-        auto page = getPage(i);
-        const byte root = 27;
-        for (uint8_t p = 0; p < 4; ++p)
-        {
-            auto& step = *page[p * 4];
-            step.gate = true;
-            step.midiNumber = root + (p * 12);
-        }
-    }
+   for (int trk = 0; trk < 4; trk++)
+   {
+       auto root = 40 + (2 * trk);
+       auto& steps = tracks[trk].steps;
+       for(int s = 0; s < steps.size(); s++)
+       {
+           if (s % 15 == 0)
+           {
+               steps[s].gate = true;
+               steps[s].midiNumber = root + 12;
+               std::string lStr = "Step " + std::to_string(s) + " set at +1 octave";
+               if (trk == 0)
+                Serial.println(lStr.c_str());
+
+           }
+           else if (s % 7 == 0)
+           {
+               steps[s].gate == true;
+               steps[s].midiNumber = root - 12;
+               std::string lStr = "Step " + std::to_string(s) + " set at -1 octave";
+               if (trk == 0)
+                Serial.println(lStr.c_str());
+           }
+           else if (s % 3 == 0)
+           {
+               steps[s].gate = true;
+               steps[s].midiNumber = root;
+               std::string lStr = "Step " + std::to_string(s) + " set at root";
+               if (trk == 0)
+                Serial.println(lStr.c_str()); 
+           }
+       }
+   }
 }
