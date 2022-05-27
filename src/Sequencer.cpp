@@ -51,9 +51,9 @@ void Sequencer::loop()
 {
     currentSequence.checkAdvance();
     updateLeds();
-    updateDisplay();
     updateDACs();
     updateGates();
+    dac2.analogWrite(millis() % 4095);
 
 }
 void Sequencer::buttonPressed(uint8_t id)
@@ -314,19 +314,8 @@ void Sequencer::updateDisplay()
 void Sequencer::writeToDac(bool useFirst, bool channel, uint16_t value)
 {
     auto *dacToUse = useFirst ? &dac1 : &dac2;
-    //don't update redundantly
-    if (dacToUse->lastValue() == value)
-        return;
-    //Serial.println("DAC needs updating");
-    uint8_t pin = useFirst ? DAC2_PIN : DAC1_PIN;
-
-    // this ensures no ambiguity about chip select
-    //digitalWrite(unusedPin, HIGH);
-    // make sure the used dac is enabled
-    if (!dacToUse->analogWrite(value, channel))
-    {
-        Serial.println("Failed to update DAC variables!");
-    }
+    if (dacToUse->isActive() && dacToUse->lastValue() != value)
+        dacToUse->analogWrite(value, channel);
 
 
 }

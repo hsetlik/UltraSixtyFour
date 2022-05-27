@@ -65,42 +65,6 @@ void Sequence::advance()
         currentStep = (currentStep + 1) % SEQ_LENGTH;
 }
 
-void Sequence::updateGates()
-{
-    //TODO
-    for (uint8_t i = 0; i < NUM_TRACKS; ++i)
-    {
-        //get the last step which was triggered
-        auto& trk = tracks[i];
-        auto lastOn = trk.lastOnStep(currentStep);
-        auto now = micros();
-        //Do nothing if the track is empty
-        if (lastOn == -1)
-            continue;
-        auto stepStart = now - microsIntoPeriod;
-        //if this is a gate from a previous step we need to offset by period * num. steps apart
-        if (lastOn != currentStep)
-        {
-            auto offset = (unsigned long)abs(currentStep - lastOn) * periodMicros;
-            stepStart -= offset;
-        }
-        //length of the gate in microseconds
-        auto length = (unsigned long)(periodMicros * (float)(trk.steps[lastOn].length / 100.0f));
-        auto gateOver = now >= stepStart + length;
-        //Turn on the gate as needed
-        if (lastOn == currentStep && !gateOver)
-        {
-            trk.gateHigh = true;
-            digitalWrite(gatePins[i], HIGH);
-        }
-        else if (trk.gateHigh && gateOver) //turn the gate off
-        {
-            trk.gateHigh = false;
-            digitalWrite(gatePins[i], LOW);
-        }
-    }
-}
-
 //Rotary encoder handlers
 void Sequence::shiftSelected(bool dirOrLength)
 {
@@ -157,10 +121,6 @@ void Sequence::toggleSelectedGate()
     step.gate = !step.gate;
 }
 
-void Sequence::updateMvs()
-{
-    //TODO
-}
 void Sequence::setTempo(int t)
 {
     tempo = t;
@@ -313,15 +273,17 @@ std::array<Step*, PAGE_LENGTH> Sequence::getPage(uint8_t page)
     
 void Sequence::initDummySequence()
 {
-    for (byte i = 0; i < 4; i++)
-    {
-        auto page = getPage(i);
-        const byte root = 27;
-        for (uint8_t p = 0; p < 4; ++p)
-        {
-            auto& step = *page[p * 4];
-            step.gate = true;
-            step.midiNumber = root + (p * 12);
-        }
-    }
+   for (byte trk = 0; trk < 4; ++trk)
+   {
+       int root = 40 + (int)(2 * trk);
+       auto &steps = tracks[trk].steps;
+       int notes[] = {root, root + 12, root - 12};
+       uint8_t idx = 0;
+       while (idx < 64)
+       {
+           steps[idx].gate = true;
+           steps[idx].midiNumber = notes[idx % 3];
+           idx += 4;
+       }
+   }
 }
