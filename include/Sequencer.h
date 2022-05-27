@@ -1,7 +1,6 @@
 #ifndef SEQUENCER_H
 #define SEQUENCER_H
 #include <Adafruit_NeoPixel.h>
-#include <MCP_DAC.h>
 #include <Wire.h>
 #include <Adafruit_SSD1306.h>
 #include "Sequence.h"
@@ -54,7 +53,7 @@
 
 #define MIN_LOOP_PERIOD 1000
 
-#define MAX_REFRESH_HZ 60
+#define MAX_REFRESH_HZ 24
 
 /*
     We have DACs with a max output of 3.3v being fed to an amplifier with a gain of 3.2, so the final range of the CV output is 0-10.56 volts.
@@ -112,6 +111,7 @@ private:
     void updateLeds();
     void updateGates();
     void updateDisplay();
+// get the DAC levels to update in main.cpp
 public:
     Sequencer();
     void loop();
@@ -119,6 +119,7 @@ public:
     void buttonHeld(uint8_t id);
     void encoderTurned(uint8_t id, bool dir);
     Adafruit_SSD1306* getDisplay() { return &display; }
+    std::array<uint16_t, 4> currentTrackLevels();
 };
 
 #endif // !SEQUENCER_H

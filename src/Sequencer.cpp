@@ -34,9 +34,8 @@ void Sequencer::loop()
 {
     currentSequence.checkAdvance();
     updateLeds();
-    updateGates();
-
 }
+
 void Sequencer::buttonPressed(uint8_t id)
 {
     ButtonId button = (ButtonId)id;
@@ -276,4 +275,15 @@ void Sequencer::updateGates()
 void Sequencer::updateDisplay()
 {
 
+}
+
+std::array<uint16_t, 4> Sequencer::currentTrackLevels()
+{
+    std::array<uint16_t, 4> arr;
+    for(byte trk = 0; trk < 4; trk++)
+    {
+        auto& step = currentSequence.tracks[trk].steps[currentSequence.currentStep];
+        arr[trk] = levelForMidiNote(step.midiNumber);
+    }
+    return arr;
 }

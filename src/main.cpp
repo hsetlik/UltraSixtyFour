@@ -8,9 +8,16 @@
 #include <AsyncElegantOTA.h>
 #include <WiFi.h>
 #include <AsyncTCP.h>
+#include <MCP_DAC.h>
 using ace_button::AceButton;
 using ace_button::ButtonConfig;
 using ace_button::LadderButtonConfig;
+
+#define DAC_UPDATE_MICROS 2500
+
+MCP4822 dac1;
+MCP4822 dac2;
+
 
 std::unique_ptr<Sequencer> seq(nullptr);
 
@@ -85,6 +92,56 @@ void checkButtons()
     aButtonConfig.checkButtons();
   }
 }
+
+//=================DAC stuff===========================================
+
+void initDACs()
+{
+  dac1.selectVSPI();
+  dac1.begin(DAC1_PIN);
+  dac1.setGain(2);
+
+  dac2.selectVSPI();
+  dac2.begin(DAC2_PIN);
+  dac2.setGain(2);
+}
+
+void runDACTest()
+{
+  while(millis() < 10000)
+  {
+    for (uint16_t i = 0; i < 64; ++i)
+    {
+      uint16_t level = (4095 / 64) * i;
+      dac1.fastWriteA(level);
+      dac2.fastWriteB(level);
+      dac2.fastWriteA(level);
+      dac2.fastWriteB(level);
+      delay(5);
+    }
+  }
+}
+
+void updateDACs()
+{
+  static unsigned long lastUpdated = 0;
+  static uint16_t level = 0;
+  auto now = micros();
+  if (now - lastUpdated > DAC_UPDATE_MICROS)
+  {
+    lastUpdated = now;
+    level = (level + 90) % 4095;
+    dac1.analogWrite(level, 0);
+    dac1.analogWrite(level, 1);
+    dac2.analogWrite(level, 0);
+    dac2.analogWrite(level, 1);
+    std::string lStr = "Level: " + std::to_string(level);
+    Serial.println(lStr.c_str());
+  }
+}
+
+
+//=======================================================================
 
 void initButtons()
 {
@@ -176,21 +233,14 @@ AsyncWebServer server(80);
  }
 //====================================
 
-
-void testOLEDLog()
-{
-  for(byte i = 0; i < 10; ++i)
-  {
-    OLEDLog::println("Line number " + std::to_string(i));
-  }
-}
-
 void setup() 
 {
   Serial.begin(115200);
   seq.reset(new Sequencer());
   initButtons();
   initWifi();
+  initDACs();
+  //runDACTest();
   OLEDLog::println("Wifi Initialized");
 }
 
@@ -199,6 +249,7 @@ unsigned long idx = 0;
 void loop()
 {
   seq->loop();
+  updateDACs();
   pollEncoders();
   checkButtons();
 }
