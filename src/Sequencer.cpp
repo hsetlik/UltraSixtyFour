@@ -1,8 +1,7 @@
 #include "Sequencer.h"
 
 Sequencer::Sequencer() : pixels(24, PIXEL_PIN, NEO_RGB + NEO_KHZ800),
-                         display(SCREEN_WIDTH, SCREEN_HEIGHT),
-                         quantizeMode(false)
+                         display(SCREEN_WIDTH, SCREEN_HEIGHT)
 {
     Serial.println("Creating sequencer");
     
@@ -114,7 +113,7 @@ void Sequencer::buttonPressed(uint8_t id)
         }
         case E4:
         {
-            quantizeMode != quantizeMode;
+            currentSequence.quantizeMode != currentSequence.quantizeMode;
             break;
         }
         case PageL:
@@ -216,7 +215,7 @@ void Sequencer::encoderTurned(uint8_t id, bool dir)
     {
         case 0:
         {
-            if (!quantizeMode)
+            if (!currentSequence.quantizeMode)
                 currentSequence.shiftTempo(dir);
             else
                 currentSequence.shiftQuantType(dir);
@@ -229,7 +228,7 @@ void Sequencer::encoderTurned(uint8_t id, bool dir)
         }
         case 2:
         {
-            if (!quantizeMode)
+            if (!currentSequence.quantizeMode)
                 currentSequence.shiftNote(dir);
             else
                 currentSequence.shiftQuantRoot(dir);
