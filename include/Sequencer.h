@@ -86,9 +86,6 @@ enum ButtonId
 class Sequencer
 {
 private:
-    MCP4822 dac1;
-
-    MCP4822 dac2;
 
     Adafruit_NeoPixel pixels;
 
@@ -106,7 +103,6 @@ private:
     {
         return note * HALFSTEP_INCREMENT;
     }
-    void setLevelForTrack(uint8_t trk, uint16_t mV);
     void setStepPixel(byte idx, uint32_t color);
     void setPagePixel(byte idx, uint32_t color);
     void setTrackPixel(byte idx, uint32_t color);
@@ -114,10 +110,8 @@ private:
     unsigned long ledLastUpdated = 0;
 //loop subroutines
     void updateLeds();
-    void updateDACs();
     void updateGates();
     void updateDisplay();
-    void writeToDac(bool useFirst, bool channel, uint16_t value);
 public:
     Sequencer();
     void loop();

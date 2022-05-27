@@ -26,23 +26,6 @@ Sequencer::Sequencer() : pixels(24, PIXEL_PIN, NEO_RGB + NEO_KHZ800),
     pinMode(GATE2, OUTPUT);
     pinMode(GATE3, OUTPUT);
     pinMode(GATE4, OUTPUT);
-
-    dac2.selectVSPI();
-    dac2.setGain(2);
-    dac2.begin(DAC2_PIN);
-    dac2.analogWrite(3000, 0);
-    dac2.analogWrite(4000, 1);
-    Serial.println("DAC 2 initialized");
-
-    dac1.selectVSPI();
-    dac1.setGain(2);
-    dac1.begin(DAC1_PIN);
-    dac1.analogWrite(1000, 0);
-    dac1.analogWrite(4000, 1);
-    Serial.println("DAC 1 initialized");
-    Serial.println("DAC outputs set");
-    std::string maxStr = "Max value is: " + std::to_string(dac1.maxValue());
-    Serial.println(maxStr.c_str());
     bootAnim.start();
 
 }
@@ -51,9 +34,7 @@ void Sequencer::loop()
 {
     currentSequence.checkAdvance();
     updateLeds();
-    updateDACs();
     updateGates();
-    dac2.analogWrite(millis() % 4095);
 
 }
 void Sequencer::buttonPressed(uint8_t id)
@@ -287,20 +268,6 @@ void Sequencer::updateLeds()
         pixels.show();
     }
 }
-
-void Sequencer::updateDACs()
-{
-    for (byte i = 0; i < 4; i++)
-    {
-        auto& step = currentSequence.tracks[i].steps[currentSequence.currentStep];
-        if (step.gate)
-        {
-            auto level = levelForMidiNote(step.midiNumber);
-            setLevelForTrack(i, level);
-        }
-    }
-}
-
 void Sequencer::updateGates()
 {
 
@@ -309,43 +276,4 @@ void Sequencer::updateGates()
 void Sequencer::updateDisplay()
 {
 
-}
-
-void Sequencer::writeToDac(bool useFirst, bool channel, uint16_t value)
-{
-    auto *dacToUse = useFirst ? &dac1 : &dac2;
-    if (dacToUse->isActive() && dacToUse->lastValue() != value)
-        dacToUse->analogWrite(value, channel);
-
-
-}
-
-void Sequencer::setLevelForTrack(uint8_t trk, uint16_t mV)
-{
-
-    switch (trk)
-    {
-    case 0:
-    {
-        writeToDac(true, false, mV); 
-        break;
-    }
-    case 1:
-    {
-        writeToDac(true, true, mV);
-        break;
-    }
-    case 2:
-    {
-        writeToDac(false, false, mV);
-        break;
-    }
-    case 3:
-    {
-        writeToDac(false, true, mV);
-        break;
-    }
-    default:
-        break;
-    }
 }
