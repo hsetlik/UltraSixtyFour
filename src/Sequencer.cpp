@@ -252,8 +252,8 @@ void Sequencer::updateLeds()
     and serial communication to the pixels.
     In practice, this works by keeping track of when the LEDs and then checking if enough time has elapsed to update again in the next loop
     */
-    auto now = micros();
-    if (now - ledLastUpdated > 1000000 / MAX_REFRESH_HZ)
+    auto now = millis();
+    if (now - ledLastUpdated > 1000 / MAX_REFRESH_HZ)
     {
         //DO PIXEL STUFF HERE
         pixels.clear();
@@ -274,8 +274,7 @@ void Sequencer::updateLeds()
             setTrackPixel(i, trackColors[i]);
             setPagePixel(i, pageColors[i]);
         }
-        if (pixels.canShow())
-            pixels.show();
+        //pixels.show();
         ledLastUpdated = micros();
     }
 }
@@ -306,8 +305,7 @@ void Sequencer::updateDisplay()
 void Sequencer::writeToDac(bool useFirst, bool channel, uint16_t value)
 {
     auto *dacToUse = useFirst ? &dac1 : &dac2;
-    if (dacToUse->isActive() && dacToUse->lastValue() != value)
-        dacToUse->analogWrite(value, channel);
+    dacToUse->analogWrite(value, channel);
 }
 
 void Sequencer::setLevelForTrack(uint8_t trk, uint16_t mV)

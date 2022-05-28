@@ -51,8 +51,8 @@ We can divide program into 3 tasks:
     Scheduler scheduler;
 
     Task tPollInputs(TASK_IMMEDIATE, TASK_FOREVER, &pollInputsCallback, &scheduler, true);
-    Task tAdvanceSequence(10, TASK_FOREVER, &advanceSequenceCallback, &scheduler, true);
-    Task tUpdateOutputs(5, TASK_FOREVER, &updateOutputsCallback, &scheduler, true);
+    //Task tAdvanceSequence(10, TASK_FOREVER, &advanceSequenceCallback, &scheduler, true);
+    //Task tUpdateOutputs(5, TASK_FOREVER, &updateOutputsCallback, &scheduler, true);
     Task tUpdatePixels(1000 / LED_REFRESH_HZ, TASK_FOREVER, &updatePixelsCallback, &scheduler, true);
 
     //==========================================================
@@ -206,6 +206,7 @@ We can divide program into 3 tasks:
                   { request->send(200, "text/plain", "Hi! I am ESP32."); });
         AsyncElegantOTA.begin(&server); // Start ElegantOTA
         server.begin();
+        OLEDLog::println("Wifi Initialized");
     }
 
     void setupScheduler()
@@ -243,5 +244,8 @@ void setup()
 }
 void loop()
 {
+  seq->checkAdvance();
+  seq->updateGates();
+  seq->updateDACs();
   scheduler.execute();
 }
