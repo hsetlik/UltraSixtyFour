@@ -1,9 +1,9 @@
 #ifndef SEQUENCER_H
 #define SEQUENCER_H
 #include <Adafruit_NeoPixel.h>
-#include <MCP_DAC.h>
 #include <Wire.h>
 #include <Adafruit_SSD1306.h>
+#include <MCP_DAC.h>
 #include "Sequence.h"
 #include "OLEDLog.h"
 #include "BootAnimation.h"
@@ -112,15 +112,18 @@ private:
     void setTrackPixel(byte idx, uint32_t color);
     unsigned long lastUpdated = 0;
     unsigned long ledLastUpdated = 0;
-//loop subroutines
+
+    void writeToDac(bool useFirst, bool channel, uint16_t value);
+    unsigned long loopIdx;
+
+public:
+    Sequencer();
+ //loop subroutines
+    void checkAdvance() { currentSequence.checkAdvance(); }
     void updateLeds();
     void updateDACs();
     void updateGates();
-    void updateDisplay();
-    void writeToDac(bool useFirst, bool channel, uint16_t value);
-public:
-    Sequencer();
-    void loop();
+    void updateDisplay();   
     void buttonPressed(uint8_t id);
     void buttonHeld(uint8_t id);
     void encoderTurned(uint8_t id, bool dir);

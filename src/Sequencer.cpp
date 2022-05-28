@@ -47,15 +47,6 @@ Sequencer::Sequencer() : pixels(24, PIXEL_PIN, NEO_RGB + NEO_KHZ800),
 
 }
 
-void Sequencer::loop()
-{
-    currentSequence.checkAdvance();
-    updateLeds();
-    updateDACs();
-    updateGates();
-    dac2.analogWrite(millis() % 4095);
-
-}
 void Sequencer::buttonPressed(uint8_t id)
 {
     ButtonId button = (ButtonId)id;
@@ -261,12 +252,11 @@ void Sequencer::updateLeds()
     and serial communication to the pixels.
     In practice, this works by keeping track of when the LEDs and then checking if enough time has elapsed to update again in the next loop
     */
-    auto now = millis();
-    if (now - ledLastUpdated > 1000 / MAX_REFRESH_HZ)
+    auto now = micros();
+    if (now - ledLastUpdated > 1000000 / MAX_REFRESH_HZ)
     {
         //DO PIXEL STUFF HERE
         pixels.clear();
-        ledLastUpdated = now;
         //set the step pixel colors
         auto colors = currentSequence.currentStepColors();
         colors = bootAnim.process(colors);
@@ -284,7 +274,9 @@ void Sequencer::updateLeds()
             setTrackPixel(i, trackColors[i]);
             setPagePixel(i, pageColors[i]);
         }
-        pixels.show();
+        if (pixels.canShow())
+            pixels.show();
+        ledLastUpdated = micros();
     }
 }
 
@@ -316,8 +308,6 @@ void Sequencer::writeToDac(bool useFirst, bool channel, uint16_t value)
     auto *dacToUse = useFirst ? &dac1 : &dac2;
     if (dacToUse->isActive() && dacToUse->lastValue() != value)
         dacToUse->analogWrite(value, channel);
-
-
 }
 
 void Sequencer::setLevelForTrack(uint8_t trk, uint16_t mV)
