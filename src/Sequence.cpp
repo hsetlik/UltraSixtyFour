@@ -39,6 +39,7 @@ currentStep(0),
 currentTrack(0),
 selectedStep(0),
 isPlaying(false),
+quantizeMode(false),
 tempo(200),
 periodMicros(0),
 microsIntoPeriod(0),
@@ -143,11 +144,11 @@ void Sequence::shiftGateLength(bool dirOrLength)
 }
 void Sequence::shiftQuantType(bool dirOrLength)
 {
-
+    tracks[currentTrack].quantizer.shiftMode(dirOrLength);
 }
 void Sequence::shiftQuantRoot(bool dirOrLength)
 {
-
+    tracks[currentTrack].quantizer.shiftRoot(dirOrLength);
 }
 
 void Sequence::toggleSelectedGate()
@@ -197,7 +198,8 @@ uint32_t Sequence::getStepColor(uint8_t idx)
             return Hsv::lerp(lerpFactor, SeqColors::stepColor, noteColor).asRgb();
         } 
     }
-    auto base = SeqColors::pitchColors[step.midiNumber % 12];
+    auto midiNum = tracks[currentTrack].quantizedMidiAt(idx);
+    auto base = SeqColors::pitchColors[midiNum % 12];
     if (idx == selectedStep)
     {
         Hsv out = {base.h, base.s, 1.0f};
@@ -219,14 +221,25 @@ ColorState Sequence::currentStepColors()
 ColorState Sequence::currentPageColors()
 {
     ColorState arr = {};
-    auto idx = (isPlaying) ? currentStep : selectedStep;
-    auto page = idx / 16;
-    for(byte i = 0; i < 4; ++i)
+    if (!quantizeMode)
     {
-        if (i == page)
-            arr.push_back(SeqColors::trackColors[i].asRgb());
-        else
-            arr.push_back(SeqColors::off.asRgb());
+        auto idx = (isPlaying) ? currentStep : selectedStep;
+        auto page = idx / 16;
+        for (byte i = 0; i < 4; ++i)
+        {
+            if (i == page)
+                arr.push_back(SeqColors::trackColors[i].asRgb());
+            else
+                arr.push_back(SeqColors::off.asRgb());
+        }
+    }
+    else
+    {
+        auto rootIdx = tracks[currentTrack].quantizer.getRoot();
+        arr.push_back(SeqColors::pitchColors[rootIdx].asRgb());
+        auto mode = (uint8_t)tracks[currentTrack].quantizer.getMode();
+        for (byte i = 0; i < 3; i++)
+            arr.push_back(SeqColors::modeColors[mode].asRgb());
     }
     return arr;
 }

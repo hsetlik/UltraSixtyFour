@@ -23,15 +23,15 @@
 #include <array>
 #include <vector>
 #include <SPI.h>
+#include "Quantize.h"
+
+using namespace Quantize;
 
 #define SEQ_BYTES 12288
 typedef StaticJsonDocument<SEQ_BYTES> SeqJson;
-//the microcontroller pins attached to each gate output
 
 typedef std::vector<uint32_t> ColorState;
 
-
-//One step in a sequence track
 struct Step
 {
     Step();
@@ -42,7 +42,6 @@ struct Step
     void addToJsonArray(JsonArray& arr);
 };
 
-//One of a seqnence's four tracks
 struct Track
 {
     Track(): gateHigh(false) {}
@@ -51,9 +50,10 @@ struct Track
     //returns first the step at or before idx which has its gate toggled on
     int lastOnStep(uint8_t idx);
     void addNestedStepsArray(JsonArray& arr);
-    
+    TrackQuantizer quantizer; 
+    //Returns the note's corresponding value in the quantizing LUT
+    uint8_t quantizedMidiAt(uint8_t idx) { return quantizer.processNote(steps[idx].midiNumber); }
 };
-//All the data for playback/saving a sequence
 
 class Sequence
 {
@@ -63,7 +63,8 @@ public:
     uint8_t currentStep;
     uint8_t currentTrack;
     uint8_t selectedStep;
-    bool isPlaying; 
+    bool isPlaying;
+    bool quantizeMode;
     //check whether enough time has elapsed to move to the next step. Call this on every loop before updating hardware
     void checkAdvance();
     //Update the 16-led display and the 4 page LEDs to reflect the current sequence

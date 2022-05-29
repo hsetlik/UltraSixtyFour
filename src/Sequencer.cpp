@@ -108,6 +108,7 @@ void Sequencer::buttonPressed(uint8_t id)
         }
         case E4:
         {
+            currentSequence.quantizeMode = !currentSequence.quantizeMode;
             break;
         }
         case PageL:
@@ -209,7 +210,10 @@ void Sequencer::encoderTurned(uint8_t id, bool dir)
     {
         case 0:
         {
-            currentSequence.shiftTempo(dir);
+            if (currentSequence.quantizeMode)
+                currentSequence.shiftQuantType(dir);
+            else
+                currentSequence.shiftTempo(dir);
             break;
         }
         case 1:
@@ -219,7 +223,10 @@ void Sequencer::encoderTurned(uint8_t id, bool dir)
         }
         case 2:
         {
-            currentSequence.shiftNote(dir);
+            if (currentSequence.quantizeMode)
+                currentSequence.shiftQuantRoot(dir);
+            else
+                currentSequence.shiftNote(dir);
             break;
         }
         case 3:
@@ -287,12 +294,8 @@ void Sequencer::updateDACs()
 {
     for (byte i = 0; i < 4; i++)
     {
-        auto& step = currentSequence.tracks[i].steps[currentSequence.currentStep];
-        if (step.gate)
-        {
-            auto level = levelForMidiNote(step.midiNumber);
-            setLevelForTrack(i, level);
-        }
+        auto midi = currentSequence.tracks[i].quantizedMidiAt(currentSequence.currentStep);
+        setLevelForTrack(i, levelForMidiNote(midi));
     }
 }
 

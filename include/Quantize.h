@@ -55,6 +55,7 @@ namespace Quantize
         uint8_t processNote(uint8_t note);
         void nextMode();
         void prevMode();
+        void shiftMode(bool dir) { dir ? nextMode() : prevMode(); }
         void shiftRoot(bool dirOrLength);
         ScaleMode getMode() {return mode; }
         uint8_t getRoot() {return rootDegree; }
