@@ -27,7 +27,6 @@
 #define SEQ_BYTES 12288
 typedef StaticJsonDocument<SEQ_BYTES> SeqJson;
 //the microcontroller pins attached to each gate output
-const uint8_t gatePins[] = {2, 3, 4, 5};
 
 typedef std::vector<uint32_t> ColorState;
 
@@ -97,6 +96,7 @@ public:
     ColorState currentTrackColors();
     //gets the colors for the 4 page LEDs
     ColorState currentPageColors();
+    void updateGates(uint8_t p1, uint8_t p2, uint8_t p3, uint8_t p4);
 private:
     uint32_t getStepColor(uint8_t idx);
     int tempo;

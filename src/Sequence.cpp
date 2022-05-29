@@ -64,6 +64,41 @@ void Sequence::advance()
     if (isPlaying)
         currentStep = (currentStep + 1) % SEQ_LENGTH;
 }
+void Sequence::updateGates(uint8_t p1, uint8_t p2, uint8_t p3, uint8_t p4)
+{
+    uint8_t gatePins[] = {p1, p2, p3, p4};
+    for (uint8_t i = 0; i < NUM_TRACKS; ++i)
+    {
+        //get the last step which was triggered
+        auto& trk = tracks[i];
+        auto lastOn = trk.lastOnStep(currentStep);
+        auto now = micros();
+        //Do nothing if the track is empty
+        if (lastOn == -1)
+            continue;
+        auto stepStart = now - microsIntoPeriod;
+        //if this is a gate from a previous step we need to offset by period * num. steps apart
+        if (lastOn != currentStep)
+        {
+            auto offset = (unsigned long)abs(currentStep - lastOn) * periodMicros;
+            stepStart -= offset;
+        }
+        //length of the gate in microseconds
+        auto length = (unsigned long)(periodMicros * (float)(trk.steps[lastOn].length / 100.0f));
+        auto gateOver = now >= stepStart + length;
+        //Turn on the gate as needed
+        if (lastOn == currentStep && !gateOver)
+        {
+            trk.gateHigh = true;
+            digitalWrite(gatePins[i], HIGH);
+        }
+        else if (trk.gateHigh && gateOver) //turn the gate off
+        {
+            trk.gateHigh = false;
+            digitalWrite(gatePins[i], LOW);
+        }
+    }
+}
 
 //Rotary encoder handlers
 void Sequence::shiftSelected(bool dirOrLength)

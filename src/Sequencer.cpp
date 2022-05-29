@@ -6,8 +6,9 @@ Sequencer::Sequencer() : pixels(24, PIXEL_PIN, NEO_RGB + NEO_KHZ800),
     Serial.println("Creating sequencer");
     
     Wire.begin(SDA, SCL);
-    pixels.begin();
+    digitalWrite(PIXEL_PIN, LOW);
     pixels.setBrightness(40);
+    pixels.begin();
     Serial.println("Initialized neo pixels");
     // set up DACS
 
@@ -27,6 +28,11 @@ Sequencer::Sequencer() : pixels(24, PIXEL_PIN, NEO_RGB + NEO_KHZ800),
     pinMode(GATE3, OUTPUT);
     pinMode(GATE4, OUTPUT);
 
+    digitalWrite(GATE1, LOW);
+    digitalWrite(GATE2, LOW);
+    digitalWrite(GATE3, LOW);
+    digitalWrite(GATE4, LOW);
+
     dac2.selectVSPI();
     dac2.setGain(2);
     dac2.begin(DAC2_PIN);
@@ -44,6 +50,8 @@ Sequencer::Sequencer() : pixels(24, PIXEL_PIN, NEO_RGB + NEO_KHZ800),
     std::string maxStr = "Max value is: " + std::to_string(dac1.maxValue());
     Serial.println(maxStr.c_str());
     bootAnim.start();
+    display.clearDisplay();
+    display.display();
 
 }
 
@@ -290,7 +298,7 @@ void Sequencer::updateDACs()
 
 void Sequencer::updateGates()
 {
-
+    currentSequence.updateGates(GATE1, GATE2, GATE3, GATE4);
 }
 
 void Sequencer::updateDisplay()
