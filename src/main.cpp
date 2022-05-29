@@ -1,4 +1,4 @@
-#define LED_REFRESH_HZ 30
+#define LED_REFRESH_HZ 20
 /*===============================================================
 We can divide program into 3 tasks:
 1. Poll inputs- as frequently as possible
@@ -50,10 +50,10 @@ We can divide program into 3 tasks:
 
     Scheduler scheduler;
 
+    Task tUpdateOutputs(3 * TASK_MILLISECOND, TASK_FOREVER, &updateOutputsCallback, &scheduler, true);
+    Task tUpdatePixels((1000 / LED_REFRESH_HZ) * TASK_MILLISECOND, TASK_FOREVER, &updatePixelsCallback, &scheduler, true);
     Task tPollInputs(TASK_IMMEDIATE, TASK_FOREVER, &pollInputsCallback, &scheduler, true);
-    //Task tAdvanceSequence(10, TASK_FOREVER, &advanceSequenceCallback, &scheduler, true);
-    //Task tUpdateOutputs(5, TASK_FOREVER, &updateOutputsCallback, &scheduler, true);
-    Task tUpdatePixels(1000 / LED_REFRESH_HZ, TASK_FOREVER, &updatePixelsCallback, &scheduler, true);
+    Task tAdvanceSequence(10 * TASK_MILLISECOND, TASK_FOREVER, &advanceSequenceCallback, &scheduler, true);
 
     //==========================================================
     using ace_button::AceButton;
@@ -111,6 +111,7 @@ We can divide program into 3 tasks:
 
     RotaryEncoder *encoders[] = {&encA, &encB, &encC, &encD};
 
+    unsigned long outputsLastUpdated = 0;
     //==============Server Stuff============
     std::string ssid = "SD Airport";
     std::string password = "plinsky1737";
@@ -134,7 +135,6 @@ We can divide program into 3 tasks:
                 pos[i] = newPos;
             }
         }
-
         static uint16_t prev = millis();
         uint16_t now = millis();
         if ((uint16_t)(now - prev) >= 3)
@@ -167,14 +167,15 @@ We can divide program into 3 tasks:
     //======================UPDATE OUTPUTS================
     void updateOutputsCallback()
     {
-        seq->updateDACs();
-        seq->updateGates();
+      seq->updateDACs();
+      seq->updateGates();
+      outputsLastUpdated = millis();
     }
 
     //===================UPDATE PIXELS====================
     void updatePixelsCallback()
     {
-        seq->updateLeds();
+      seq->updateLeds();
     }
     //=======================GENRAL SETUP STUFF============
     void initWifi()
@@ -244,8 +245,5 @@ void setup()
 }
 void loop()
 {
-  seq->checkAdvance();
-  seq->updateGates();
-  seq->updateDACs();
   scheduler.execute();
 }

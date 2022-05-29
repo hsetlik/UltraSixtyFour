@@ -252,31 +252,27 @@ void Sequencer::updateLeds()
     and serial communication to the pixels.
     In practice, this works by keeping track of when the LEDs and then checking if enough time has elapsed to update again in the next loop
     */
-    auto now = millis();
-    if (now - ledLastUpdated > 1000 / MAX_REFRESH_HZ)
+    // DO PIXEL STUFF HERE
+    pixels.clear();
+    // set the step pixel colors
+    auto colors = currentSequence.currentStepColors();
+    colors = bootAnim.process(colors);
+    for (byte i = 0; i < PAGE_LENGTH; ++i)
     {
-        //DO PIXEL STUFF HERE
-        pixels.clear();
-        //set the step pixel colors
-        auto colors = currentSequence.currentStepColors();
-        colors = bootAnim.process(colors);
-        for(byte i = 0; i < PAGE_LENGTH; ++i)
-        {
-            setStepPixel(i, colors[i]);
-        }
-        //get the track and page colors
-        auto trackColors = currentSequence.currentTrackColors();
-        trackColors = trackClearAnim.process(trackColors);
-        auto pageColors = currentSequence.currentPageColors();
-        pageColors = applyPageAnim.process(pageColors);
-        for(byte i = 0; i < 4; ++i)
-        {
-            setTrackPixel(i, trackColors[i]);
-            setPagePixel(i, pageColors[i]);
-        }
-        //pixels.show();
-        ledLastUpdated = micros();
+        setStepPixel(i, colors[i]);
     }
+    // get the track and page colors
+    auto trackColors = currentSequence.currentTrackColors();
+    trackColors = trackClearAnim.process(trackColors);
+    auto pageColors = currentSequence.currentPageColors();
+    pageColors = applyPageAnim.process(pageColors);
+    for (byte i = 0; i < 4; ++i)
+    {
+        setTrackPixel(i, trackColors[i]);
+        setPagePixel(i, pageColors[i]);
+    }
+    pixels.show();
+    ledLastUpdated = micros();
 }
 
 void Sequencer::updateDACs()

@@ -45,7 +45,7 @@
 #define GATE4 15
 
 //NeoPixels data line
-#define PIXEL_PIN 18
+#define PIXEL_PIN 1
 
 //Other macros
 #define SCREEN_WIDTH 128
@@ -54,7 +54,6 @@
 
 #define MIN_LOOP_PERIOD 1000
 
-#define MAX_REFRESH_HZ 60
 
 /*
     We have DACs with a max output of 3.3v being fed to an amplifier with a gain of 3.2, so the final range of the CV output is 0-10.56 volts.
@@ -115,6 +114,7 @@ private:
 
     void writeToDac(bool useFirst, bool channel, uint16_t value);
     unsigned long loopIdx;
+
 
 public:
     Sequencer();
