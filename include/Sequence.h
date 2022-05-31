@@ -59,6 +59,7 @@ class Sequence
 {
 public:
     Sequence();
+    Sequence(JsonDocument doc);
     std::array<Track, NUM_TRACKS> tracks;
     uint8_t currentStep;
     uint8_t currentTrack;
