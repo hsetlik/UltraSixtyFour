@@ -1,7 +1,7 @@
 #include "Sequence.h"
 
 //=====================STEP==============================
-Step::Step() : midiNumber(69), gate(false), length(80)
+Step::Step() : midiNumber(45), gate(false), length(80)
 {
 }
 
@@ -41,13 +41,14 @@ selectedStep(0),
 isPlaying(false),
 quantizeMode(false),
 lengthMode(false),
+pageMode(false),
 tempo(200),
 periodMicros(0),
 microsIntoPeriod(0),
 lastMicros(0)
 {
     setTempo(tempo);
-    initDummySequence();
+    //initDummySequence();
 }
 
 void Sequence::checkAdvance()
@@ -62,8 +63,9 @@ void Sequence::checkAdvance()
 void Sequence::advance()
 {
     microsIntoPeriod -= periodMicros;
+    auto max = (pageMode) ? PAGE_LENGTH : SEQ_LENGTH;
     if (isPlaying)
-        currentStep = (currentStep + 1) % SEQ_LENGTH;
+        currentStep = (currentStep + 1) % max;
 }
 void Sequence::updateGates(uint8_t p1, uint8_t p2, uint8_t p3, uint8_t p4)
 {
@@ -109,9 +111,10 @@ void Sequence::updateGates(uint8_t p1, uint8_t p2, uint8_t p3, uint8_t p4)
 //Rotary encoder handlers
 void Sequence::shiftSelected(bool dirOrLength)
 {
-    selectedStep = (dirOrLength) ? (selectedStep + 1) % SEQ_LENGTH : selectedStep - 1;
-    if (selectedStep < 0)
-        selectedStep = SEQ_LENGTH - 1;
+    if (dirOrLength)
+        selectedStep = (selectedStep + 1) % SEQ_LENGTH;
+    else
+        selectedStep = (selectedStep == 0) ? 63 : selectedStep - 1;
 }
 void Sequence::shiftNote(bool dirOrLength)
 {
@@ -236,6 +239,9 @@ ColorState Sequence::currentPageColors()
                 arr.push_back(SeqColors::trackColors[i].asRgb());
             else
                 arr.push_back(SeqColors::off.asRgb());
+            // switch to a solid color if we're in page mode
+            if (pageMode)
+                arr.back() = SeqColors::aeolianHsv.asRgb();
         }
     }
     else

@@ -195,6 +195,8 @@ void Sequencer::buttonHeld(uint8_t id)
         }
         case PageR:
         {
+            currentSequence.pageMode = !currentSequence.pageMode;
+            currentSequence.currentStep = currentSequence.currentStep % PAGE_LENGTH;
             break;
         }
         default:
@@ -229,7 +231,7 @@ void Sequencer::encoderTurned(uint8_t id, bool dir)
             else if (currentSequence.lengthMode)
                 currentSequence.shiftGateLength(dir);
             else
-                currentSequence.shiftNote(dir);
+                currentSequence.shiftNote(!dir);
             break;
         }
         case 3:
