@@ -40,6 +40,7 @@ currentTrack(0),
 selectedStep(0),
 isPlaying(false),
 quantizeMode(false),
+lengthMode(false),
 tempo(200),
 periodMicros(0),
 microsIntoPeriod(0),
@@ -51,7 +52,6 @@ lastMicros(0)
 
 void Sequence::checkAdvance()
 {
-    //TODO
     auto now = micros();
     microsIntoPeriod += (now - lastMicros);
     if (microsIntoPeriod >= periodMicros)
@@ -70,6 +70,11 @@ void Sequence::updateGates(uint8_t p1, uint8_t p2, uint8_t p3, uint8_t p4)
     uint8_t gatePins[] = {p1, p2, p3, p4};
     for (uint8_t i = 0; i < NUM_TRACKS; ++i)
     {
+        if (!isPlaying)
+        {
+            digitalWrite(gatePins[i], LOW);
+            continue;
+        }
         //get the last step which was triggered
         auto& trk = tracks[i];
         auto lastOn = trk.lastOnStep(currentStep);
@@ -318,20 +323,22 @@ std::array<Step*, PAGE_LENGTH> Sequence::getPage(uint8_t page)
     }
     return output;
 }
-    
+
 void Sequence::initDummySequence()
 {
-   for (byte trk = 0; trk < 4; ++trk)
-   {
-       int root = 40 + (int)(2 * trk);
-       auto &steps = tracks[trk].steps;
-       int notes[] = {root, root + 12, root - 12};
-       uint8_t idx = 0;
-       while (idx < 64)
-       {
-           steps[idx].gate = true;
-           steps[idx].midiNumber = notes[idx % 3];
-           idx += 4;
-       }
-   }
+    uint8_t notes[] = {6, 18, 30, 42};
+    for (uint8_t step = 0; step < 64; step++)
+    {
+
+        if (step % 2 != 0)
+            continue;
+        auto idx = step / 2;
+        auto note = notes[idx % 4];
+        for (uint8_t trk = 0; trk < 4; trk++)
+        {
+            auto& onStep = tracks[trk].steps[step];
+            onStep.gate = true;
+            onStep.midiNumber = note + trk;
+        }
+    }
 }

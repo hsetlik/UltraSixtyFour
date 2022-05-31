@@ -39,10 +39,10 @@
 #define SCL 5
 
 //gate outputs
-#define GATE1 16
+#define GATE1 15
 #define GATE2 4
 #define GATE3 2
-#define GATE4 15
+#define GATE4 16
 
 //NeoPixels data line
 #define PIXEL_PIN 1
@@ -56,13 +56,16 @@
 
 
 /*
-    We have DACs with a max output of 3.3v being fed to an amplifier with a gain of 3.2, so the final range of the CV output is 0-10.56 volts.
-    A halfstep corresponds to one twelfth of a volt or 83.33333mV. 
-    Since the MCP4822 is a 12-bit DAC, we control it with a number between 0 and 4095 and therefore the increment is ~2.579mV.
-    Therefore, a half-step is represented by a difference of about 32.3 in the input integer
+Vout = 10.56 * (value / 4095)
+Vnote = (1 / 12) * note
+1/12 V = ~83.333mV
+10.56 / 4095 = 0.002579
+~2.579 mV / DAC integer
+83.33333333 / 2.579 = 32.312
+
 */
 
-#define HALFSTEP_INCREMENT 32.3123f
+#define HALFSTEP_INCREMENT 25.644f
 
 //Corresponds to index passed by button library in main.cpp
 enum ButtonId
@@ -103,7 +106,7 @@ private:
 
     static uint16_t levelForMidiNote(uint16_t note)
     {
-        return note * HALFSTEP_INCREMENT;
+        return ((float)note * HALFSTEP_INCREMENT);
     }
     void setLevelForTrack(uint8_t trk, uint16_t mV);
     void setStepPixel(byte idx, uint32_t color);

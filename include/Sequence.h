@@ -65,6 +65,7 @@ public:
     uint8_t selectedStep;
     bool isPlaying;
     bool quantizeMode;
+    bool lengthMode;
     //check whether enough time has elapsed to move to the next step. Call this on every loop before updating hardware
     void checkAdvance();
     //Update the 16-led display and the 4 page LEDs to reflect the current sequence

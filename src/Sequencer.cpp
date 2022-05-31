@@ -99,6 +99,7 @@ void Sequencer::buttonPressed(uint8_t id)
         }
         case E2:
         {
+            currentSequence.lengthMode = !currentSequence.lengthMode;
             break;
         }
         case E3:
@@ -225,6 +226,8 @@ void Sequencer::encoderTurned(uint8_t id, bool dir)
         {
             if (currentSequence.quantizeMode)
                 currentSequence.shiftQuantRoot(dir);
+            else if (currentSequence.lengthMode)
+                currentSequence.shiftGateLength(dir);
             else
                 currentSequence.shiftNote(dir);
             break;
@@ -255,7 +258,7 @@ void Sequencer::setPagePixel(byte idx, uint32_t color)
 
 void Sequencer::setTrackPixel(byte idx, uint32_t color)
 {
-    pixels.setPixelColor(20 + idx, color);
+    pixels.setPixelColor(23 - (3 - idx), color);
 }
 
 void Sequencer::updateLeds()
@@ -295,7 +298,8 @@ void Sequencer::updateDACs()
     for (byte i = 0; i < 4; i++)
     {
         auto midi = currentSequence.tracks[i].quantizedMidiAt(currentSequence.currentStep);
-        setLevelForTrack(i, levelForMidiNote(midi));
+        if (currentSequence.tracks[i].steps[currentSequence.currentStep].gate)
+            setLevelForTrack(i, levelForMidiNote(midi));
     }
 }
 
