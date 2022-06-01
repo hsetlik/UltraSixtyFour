@@ -11,6 +11,7 @@ class SequenceFilesystem
 private:
     fs::FS* const fileSys;
     /* data */
+    static bool isValidSequence(File& file);
 public:
     SequenceFilesystem(fs::FS* fileSys = &SPIFFS);
     ~SequenceFilesystem();

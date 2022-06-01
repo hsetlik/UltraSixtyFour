@@ -64,16 +64,20 @@ microsIntoPeriod(0),
 lastMicros(0)
 {
     tempo = doc["tempo"];
+    String lStr = "Tempo: " + tempo;
+    Serial.println(lStr.c_str());
     JsonArray jsonTracks = doc["tracks"];
-    for (uint8_t i = 0; i < jsonTracks.size(); i++)
+    for (auto i = 0; i < jsonTracks.size(); i++)
     {
         JsonArray steps = jsonTracks[i];
-        for (uint8_t s = 0; s < SEQ_LENGTH; ++i)
+        for (auto s = 0; s < SEQ_LENGTH; ++i)
         {
             auto& step = tracks[i].steps[s];
             step.midiNumber = steps[s]["midiNumber"];
             step.gate = steps[s]["gate"];
             step.length = steps[s]["length"];
+            std::string lStr = "Note " + std::to_string(s) + " on  track " + std::to_string(i) + " has midi number " + std::to_string(step.midiNumber);
+            //Serial.println(lStr.c_str());
         }
     }
     setTempo(tempo);
