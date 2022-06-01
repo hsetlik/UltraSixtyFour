@@ -32,6 +32,7 @@ We can divide program into 3 tasks:
 #include <AsyncElegantOTA.h>
 #include <WiFi.h>
 #include <AsyncTCP.h>
+#include "OLEDLog.h"
 
     /*==========================================================
     Task scheduling stuff
@@ -100,6 +101,7 @@ We can divide program into 3 tasks:
     static const uint16_t bLevels[] = {482, 1117, 1748, 2386, 2896, 3553};
 
     static LadderButtonConfig bButtonConfig(BUTTONS2, bNumButtons, bLevels, bNumButtons, bButtons);
+
     // common button stuff
     void handleEvent(AceButton *button, uint8_t eventType, uint8_t buttonState);
     // Encoder stuff========================
@@ -208,6 +210,7 @@ We can divide program into 3 tasks:
                   { request->send(200, "text/plain", "Hi! I am ESP32."); });
         AsyncElegantOTA.begin(&server); // Start ElegantOTA
         server.begin();
+        OLEDLog::println("Wifi Started. . .");
     }
 
     void autosaveCallback()
@@ -235,7 +238,13 @@ We can divide program into 3 tasks:
         bButtonConfig.setLongPressDelay(800);
 
         initWifi();
-    }
+}
+
+
+void OLEDLog::println(std::string str)
+{
+  OLEDLog::printToDisplay(str, seq->getDisplay(), logDeque);
+}
 
 
 void setup() 
