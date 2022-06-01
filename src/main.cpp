@@ -25,7 +25,6 @@ We can divide program into 3 tasks:
 #include <TaskScheduler.h>
 #include <Arduino.h>
 #include "Sequencer.h"
-#include "OLEDLog.h"
 #include <memory>
 #include <RotaryEncoder.h>
 #include <AceButton.h>
@@ -46,6 +45,8 @@ We can divide program into 3 tasks:
 
     void updatePixelsCallback();
 
+    void autosaveCallback();
+
     void setupScheduler();
 
     Scheduler scheduler;
@@ -54,7 +55,7 @@ We can divide program into 3 tasks:
     Task tUpdatePixels((1000 / LED_REFRESH_HZ) * TASK_MILLISECOND, TASK_FOREVER, &updatePixelsCallback, &scheduler, true);
     Task tPollInputs(TASK_IMMEDIATE, TASK_FOREVER, &pollInputsCallback, &scheduler, true);
     Task tAdvanceSequence(10 * TASK_MILLISECOND, TASK_FOREVER, &advanceSequenceCallback, &scheduler, true);
-
+    Task tAutosave(30 * TASK_SECOND, TASK_FOREVER, &autosaveCallback, &scheduler, true);
     //==========================================================
     using ace_button::AceButton;
     using ace_button::ButtonConfig;
@@ -207,7 +208,11 @@ We can divide program into 3 tasks:
                   { request->send(200, "text/plain", "Hi! I am ESP32."); });
         AsyncElegantOTA.begin(&server); // Start ElegantOTA
         server.begin();
-        OLEDLog::println("Wifi Initialized");
+    }
+
+    void autosaveCallback()
+    {
+        seq->autosaveCurrentSequence();
     }
 
     void setupScheduler()
@@ -232,12 +237,6 @@ We can divide program into 3 tasks:
         initWifi();
     }
 
-
-
-void OLEDLog::println(std::string str)
-{
-  OLEDLog::printToDisplay(str, seq->getDisplay(), logDeque);
-}
 
 void setup() 
 {

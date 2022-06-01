@@ -28,7 +28,7 @@
 using namespace Quantize;
 
 #define SEQ_BYTES 12288
-typedef StaticJsonDocument<SEQ_BYTES> SeqJson;
+typedef DynamicJsonDocument SeqJson;
 
 typedef std::vector<uint32_t> ColorState;
 
@@ -59,7 +59,7 @@ class Sequence
 {
 public:
     Sequence();
-    Sequence(JsonDocument doc);
+    Sequence(JsonDocument& doc);
     std::array<Track, NUM_TRACKS> tracks;
     uint8_t currentStep;
     uint8_t currentTrack;

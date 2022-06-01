@@ -4,6 +4,7 @@ Sequencer::Sequencer() : pixels(24, PIXEL_PIN, NEO_RGB + NEO_KHZ800),
                          display(SCREEN_WIDTH, SCREEN_HEIGHT)
 {
     Serial.println("Creating sequencer");
+    loadAutosavedSequence();
     
     Wire.begin(SDA, SCL);
     digitalWrite(PIXEL_PIN, LOW);
@@ -343,4 +344,21 @@ void Sequencer::setLevelForTrack(uint8_t trk, uint16_t mV)
     default:
         break;
     }
+}
+
+void Sequencer::autosaveCurrentSequence()
+{
+    if (fileSys.saveSequence(AUTOSAVE_NAME, currentSequence))
+        Serial.println("Sequence autosaved");
+    else
+        Serial.println("Autosave failed!");
+
+}
+
+void Sequencer::loadAutosavedSequence()
+{
+    if (fileSys.loadSequence(AUTOSAVE_NAME, currentSequence))
+        Serial.println("Autosaved sequence restored");
+    else
+        Serial.println("Failed to load autosaved sequence!");
 }

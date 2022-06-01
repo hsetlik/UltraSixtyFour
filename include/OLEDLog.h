@@ -16,8 +16,9 @@ public:
     {
         println(std::string(str));
     }
-    static void printToDisplay(std::string str, Adafruit_SSD1306* display, std::deque<std::string>& log);
+    static void printToDisplay(std::string str, Adafruit_SSD1306* display);
 private:
+    static std::deque<std::string> log;
 };
 
 #endif // !OLEDLOG_H

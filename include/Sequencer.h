@@ -5,10 +5,10 @@
 #include <Adafruit_SSD1306.h>
 #include <MCP_DAC.h>
 #include "Sequence.h"
-#include "OLEDLog.h"
 #include "BootAnimation.h"
 #include "TrackClearAnimation.h"
 #include "ApplyPageAnimation.h"
+#include "SequenceFilesystem.h"
 
 
 // Pin definitions based on 30-pin ESP32 Devkit V1 pinout
@@ -104,6 +104,8 @@ private:
 
     ApplyPageAnimation applyPageAnim;
 
+    SequenceFilesystem fileSys;
+
     static uint16_t levelForMidiNote(uint16_t note)
     {
         return ((float)note * HALFSTEP_INCREMENT);
@@ -119,6 +121,7 @@ private:
     unsigned long loopIdx;
 
 
+
 public:
     Sequencer();
  //loop subroutines
@@ -131,6 +134,8 @@ public:
     void buttonHeld(uint8_t id);
     void encoderTurned(uint8_t id, bool dir);
     Adafruit_SSD1306* getDisplay() { return &display; }
+    void autosaveCurrentSequence();
+    void loadAutosavedSequence();
 };
 
 #endif // !SEQUENCER_H

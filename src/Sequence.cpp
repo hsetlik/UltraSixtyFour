@@ -51,6 +51,34 @@ lastMicros(0)
     //initDummySequence();
 }
 
+Sequence::Sequence(JsonDocument& doc) :
+currentStep(0),
+currentTrack(0),
+selectedStep(0),
+isPlaying(false),
+quantizeMode(false),
+lengthMode(false),
+pageMode(false),
+periodMicros(0),
+microsIntoPeriod(0),
+lastMicros(0)
+{
+    tempo = doc["tempo"];
+    JsonArray jsonTracks = doc["tracks"];
+    for (uint8_t i = 0; i < jsonTracks.size(); i++)
+    {
+        JsonArray steps = jsonTracks[i];
+        for (uint8_t s = 0; s < SEQ_LENGTH; ++i)
+        {
+            auto& step = tracks[i].steps[s];
+            step.midiNumber = steps[s]["midiNumber"];
+            step.gate = steps[s]["gate"];
+            step.length = steps[s]["length"];
+        }
+    }
+    setTempo(tempo);
+}
+
 void Sequence::checkAdvance()
 {
     auto now = micros();
@@ -172,7 +200,7 @@ void Sequence::setTempo(int t)
 }
 SeqJson Sequence::getJsonDocument(std::string name)
 {
-    SeqJson doc;
+    SeqJson doc(SEQ_BYTES);
     doc["name"] = name.c_str();
     doc["tempo"] = tempo;
     auto jsonTracks = doc.createNestedArray("tracks");
