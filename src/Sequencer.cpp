@@ -323,7 +323,7 @@ void Sequencer::setLevelForTrack(uint8_t trk, uint16_t mV)
     {
     case 0:
     {
-        writeToDac(true, false, mV); 
+        writeToDac(false, false, mV); 
         break;
     }
     case 1:
@@ -333,7 +333,7 @@ void Sequencer::setLevelForTrack(uint8_t trk, uint16_t mV)
     }
     case 2:
     {
-        writeToDac(false, false, mV);
+        writeToDac(true, false, mV);
         break;
     }
     case 3:

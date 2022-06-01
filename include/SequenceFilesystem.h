@@ -2,7 +2,6 @@
 
 #include "Sequence.h"
 #define AUTOSAVE_NAME "lastAutosavedSequence"
-#define FORMAT_SPIFFS_IF_FAILED true
 #include <FS.h>
 #include <SPIFFS.h>
 
