@@ -20,7 +20,6 @@ void PixelAnimation::start()
     if (buffer.size() < 1)
         initFrameBuffer();
     running = true;
-    Serial.println("Animation started. . .");
 }
 
 void PixelAnimation::finish()

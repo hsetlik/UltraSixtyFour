@@ -38,8 +38,11 @@ struct Step
     uint8_t midiNumber;
     bool gate;
     //gate length as a percentage of the length of one step 
-    int length;
+    uint8_t length;
     void addToJsonArray(JsonArray& arr);
+    uint16_t encode();
+    static void setBit(uint16_t& num, uint8_t idx, bool value);
+    static Step decode(uint16_t value);
 };
 
 struct Track
@@ -53,6 +56,8 @@ struct Track
     TrackQuantizer quantizer; 
     //Returns the note's corresponding value in the quantizing LUT
     uint8_t quantizedMidiAt(uint8_t idx) { return quantizer.processNote(steps[idx].midiNumber); }
+    std::string encode();
+    static Track decode(std::string str);
 };
 
 class Sequence
@@ -60,6 +65,8 @@ class Sequence
 public:
     Sequence();
     Sequence(JsonDocument doc);
+    static Sequence decode(std::string str);
+    std::string encode();
     std::array<Track, NUM_TRACKS> tracks;
     uint8_t currentStep;
     uint8_t currentTrack;

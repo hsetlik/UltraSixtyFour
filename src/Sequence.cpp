@@ -12,6 +12,47 @@ void Step::addToJsonArray(JsonArray& arr)
     obj["gate"] = gate;
     obj["length"] = length;
 }
+
+uint16_t Step::encode()
+{
+   /* 
+   A step can be represented in 2 bytes. The first byte represents the midi number. With a range of 0-255, the midi number needs all 8 bits.
+   The gate lentgh has a range of 0-99, which can be represented in only 7 bits (max value 127). The final bit can be use to store the gate status.
+   Byte 1:
+   00101101 - represents midi number 45
+   Byte 2:
+   01010000 - the leftmost bit represents the gate status, the remaining seven bits represent the gate length (80 in this case)
+   */
+   uint16_t value = midiNumber; // the midi number should only use the rightmost 8 bits, so the leftmost 8 bits should be cleared
+   value = value << 8; // move the midi number to the left byte
+   uint16_t len16 = length; // length again uses only rightmost byte
+   setBit(len16, 7, gate); // set 8th bit for the gate
+   //combine the two bits
+   return value & len16;
+}
+
+Step Step::decode(uint16_t value)
+{
+    uint16_t midi = value >> 8; //bring value back down to righthand byte
+    uint16_t len = value << 8; //shift length byte left to clear righthand bits
+    len = len >> 8;
+    bool gate = len >> 7 > 0; //shift to onlt the last bit to check the gate
+    //ensure that out length is within 7 bit range and disregard the gate bit
+    setBit(len, 7, false);
+    Step step;
+    step.midiNumber = (uint8_t)midi;
+    step.length = (uint8_t)len;
+    step.gate = gate;
+    return step;
+}
+
+static void setBit(uint16_t& num, uint8_t idx, bool value)
+{
+    if (value)
+        num |= 1 << idx;
+    else
+        num &= ~(1 << idx);
+}
 //=====================TRACK==============================
 int Track::lastOnStep(uint8_t idx)
 {
@@ -33,6 +74,38 @@ void Track::addNestedStepsArray(JsonArray& arr)
         steps[s].addToJsonArray(jsonSteps);
     }
 }
+
+std::string Track::encode()
+{
+    std::string output = "";
+    for (auto& step : steps)
+    {
+        output += std::to_string(step.encode()) + ':';
+    }
+    return output;
+}
+
+Track Track::decode(std::string str)
+{
+    Track output;
+    std::string curr = "";
+    uint8_t idx = 0;
+    for (auto& c : str)
+    {
+        if (c == ':')
+        {
+            uint16_t stepVal = (uint16_t)std::stoi(curr);
+            output.steps[idx] = Step::decode(stepVal);
+            ++idx;
+            curr = "";
+        }
+        else
+        {
+            curr += c;
+        }
+    }
+    return output;
+}
 //=====================SEQUENCE==============================
 Sequence::Sequence() :
 currentStep(0),
@@ -51,6 +124,29 @@ lastMicros(0)
     //initDummySequence();
 }
 
+Sequence Sequence::decode(std::string str)
+{
+    Sequence seq;
+    //split the string up into lines
+    std::vector<std::string> lines = {};
+    std::string curr = "";
+    for (auto& c : str)
+    {
+        if (c == '\n')
+        {
+            lines.push_back(curr);
+            curr = "";
+        }
+        curr += c;
+    }
+    seq.setTempo(std::stoi(lines[0]));
+    for (uint8_t trk = 0; trk < 4; ++trk)
+    {
+        seq.tracks[trk] = Track::decode(lines[trk + 1]);
+    }
+    return seq;
+}
+
 void Sequence::checkAdvance()
 {
     auto now = micros();
@@ -58,6 +154,14 @@ void Sequence::checkAdvance()
     if (microsIntoPeriod >= periodMicros)
         advance();
     lastMicros = now;
+}
+
+std::string Sequence::encode()
+{
+    std::string output = std::to_string(tempo) + '\n';
+    for(auto& t : tracks)
+        output += t.encode() + '\n';
+    return output;
 }
 
 void Sequence::advance()

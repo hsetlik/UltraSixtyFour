@@ -10,6 +10,8 @@
 #include "TrackClearAnimation.h"
 #include "ApplyPageAnimation.h"
 
+// Macro to turn the pixels off for serial debugging
+#define USE_NEOPIXELS true
 
 // Pin definitions based on 30-pin ESP32 Devkit V1 pinout
 //Encoder pins
@@ -30,7 +32,7 @@
 #define CV_IN 21
 #define TRIG_IN 13
 
-//DAC/SPI pins
+//DAC pins
 #define DAC1_PIN 22
 #define DAC2_PIN 12
 

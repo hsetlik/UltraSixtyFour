@@ -175,7 +175,9 @@ We can divide program into 3 tasks:
     //===================UPDATE PIXELS====================
     void updatePixelsCallback()
     {
+    #if USE_NEOPIXELS
       seq->updateLeds();
+    #endif
     }
     //=======================GENRAL SETUP STUFF============
     void initWifi()
@@ -191,23 +193,21 @@ We can divide program into 3 tasks:
         {
             // OledLog::writeLn("Network " + ssid + " not available");
         }
-        Serial.println(res);
-        // Wait for connection
         while (WiFi.status() != WL_CONNECTED)
         {
             delay(500);
-            Serial.print(".");
+            //Serial.print(".");
         }
-        Serial.println();
+        //Serial.println();
         auto ip = WiFi.localIP();
         std::string logString = "Connected to " + ssid + " with IP address " + ip.toString().c_str();
-        Serial.println(logString.c_str());
+        //Serial.println(logString.c_str());
 
         server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
                   { request->send(200, "text/plain", "Hi! I am ESP32."); });
         AsyncElegantOTA.begin(&server); // Start ElegantOTA
         server.begin();
-        OLEDLog::println("Wifi Initialized");
+        OLEDLog::println("Wifi Connected");
     }
 
     void setupScheduler()

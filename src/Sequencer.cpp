@@ -3,12 +3,15 @@
 Sequencer::Sequencer() : pixels(24, PIXEL_PIN, NEO_RGB + NEO_KHZ800),
                          display(SCREEN_WIDTH, SCREEN_HEIGHT)
 {
-    Serial.println("Creating sequencer");
-    
     Wire.begin(SDA, SCL);
+    Serial.println("Creating sequencer");
     digitalWrite(PIXEL_PIN, LOW);
     pixels.setBrightness(40);
     pixels.begin();
+    #if !USE_NEOPIXELS
+        pixels.clear(); 
+        pixels.show();
+    #endif
     Serial.println("Initialized neo pixels");
     // set up DACS
 
