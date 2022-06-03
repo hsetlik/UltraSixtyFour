@@ -50,10 +50,8 @@ We can divide program into 3 tasks:
 
     Scheduler scheduler;
 
-    Task tUpdateOutputs(3 * TASK_MILLISECOND, TASK_FOREVER, &updateOutputsCallback, &scheduler, true);
     Task tUpdatePixels((1000 / LED_REFRESH_HZ) * TASK_MILLISECOND, TASK_FOREVER, &updatePixelsCallback, &scheduler, true);
     Task tPollInputs(TASK_IMMEDIATE, TASK_FOREVER, &pollInputsCallback, &scheduler, true);
-    Task tAdvanceSequence(10 * TASK_MILLISECOND, TASK_FOREVER, &advanceSequenceCallback, &scheduler, true);
 
     //==========================================================
     using ace_button::AceButton;
@@ -111,7 +109,6 @@ We can divide program into 3 tasks:
 
     RotaryEncoder *encoders[] = {&encA, &encB, &encC, &encD};
 
-    unsigned long outputsLastUpdated = 0;
     //==============Server Stuff============
     std::string ssid = "SD Airport";
     std::string password = "plinsky1737";
@@ -159,19 +156,6 @@ We can divide program into 3 tasks:
             }
         }
     }
-    //======================ADVANCE SEQUENCE==============
-    void advanceSequenceCallback()
-    {
-        seq->checkAdvance();
-    }
-    //======================UPDATE OUTPUTS================
-    void updateOutputsCallback()
-    {
-      seq->updateDACs();
-      seq->updateGates();
-      outputsLastUpdated = millis();
-    }
-
     //===================UPDATE PIXELS====================
     void updatePixelsCallback()
     {
@@ -187,7 +171,7 @@ We can divide program into 3 tasks:
         auto res = WiFi.begin(ssid.c_str(), password.c_str());
         if (res == WL_CONNECT_FAILED)
         {
-            // OledLog::writeLn("Connection failed");
+            OLEDLog::println("Connection failed");
         }
         else if (res == WL_NO_SSID_AVAIL)
         {
@@ -207,13 +191,17 @@ We can divide program into 3 tasks:
                   { request->send(200, "text/plain", "Hi! I am ESP32."); });
         AsyncElegantOTA.begin(&server); // Start ElegantOTA
         server.begin();
-        OLEDLog::println("Wifi Connected");
+        if (res != WL_CONNECT_FAILED)
+            OLEDLog::println("Connection succeded");
     }
 
     void setupScheduler()
     {
         Serial.begin(115200);
+
+
         seq.reset(new Sequencer());
+        initWifi();
         // Set up buttons
         pinMode(BUTTONS1, INPUT);
         pinMode(BUTTONS2, INPUT);
@@ -229,7 +217,6 @@ We can divide program into 3 tasks:
         bButtonConfig.setFeature(ButtonConfig::kFeatureSuppressAfterClick);
         bButtonConfig.setLongPressDelay(800);
 
-        initWifi();
     }
 
 
@@ -245,5 +232,8 @@ void setup()
 }
 void loop()
 {
-  scheduler.execute();
+    scheduler.execute();
+    seq->updateDACs();
+    seq->updateGates();
+    seq->checkAdvance();
 }
