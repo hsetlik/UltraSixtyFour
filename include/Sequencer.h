@@ -96,7 +96,6 @@ private:
 
     Adafruit_NeoPixel pixels;
 
-    Adafruit_SSD1306 display;
 
     Sequence currentSequence;
 
@@ -132,7 +131,6 @@ public:
     void buttonPressed(uint8_t id);
     void buttonHeld(uint8_t id);
     void encoderTurned(uint8_t id, bool dir);
-    Adafruit_SSD1306* getDisplay() { return &display; }
 };
 
 #endif // !SEQUENCER_H

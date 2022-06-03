@@ -33,6 +33,7 @@ We can divide program into 3 tasks:
 #include <AsyncElegantOTA.h>
 #include <WiFi.h>
 #include <AsyncTCP.h>
+#include "OLEDDriver.h"
 
     /*==========================================================
     Task scheduling stuff
@@ -40,9 +41,7 @@ We can divide program into 3 tasks:
     // Forward declared callbacks
     void pollInputsCallback();
 
-    void advanceSequenceCallback();
-
-    void updateOutputsCallback();
+    void updateDisplayCallback();
 
     void updatePixelsCallback();
 
@@ -52,6 +51,7 @@ We can divide program into 3 tasks:
 
     Task tUpdatePixels((1000 / LED_REFRESH_HZ) * TASK_MILLISECOND, TASK_FOREVER, &updatePixelsCallback, &scheduler, true);
     Task tPollInputs(TASK_IMMEDIATE, TASK_FOREVER, &pollInputsCallback, &scheduler, true);
+    Task tUpdateDisplay((1000 / OLED_REFRESH_HZ) * TASK_MILLISECOND, TASK_FOREVER, &updateDisplayCallback, &scheduler, true);
 
     //==========================================================
     using ace_button::AceButton;
@@ -59,6 +59,8 @@ We can divide program into 3 tasks:
     using ace_button::LadderButtonConfig;
 
     std::unique_ptr<Sequencer> seq(nullptr);
+
+    std::unique_ptr<OLEDDriver> displayDriver(nullptr);
 
     std::deque<std::string> logDeque;
 
@@ -163,6 +165,11 @@ We can divide program into 3 tasks:
       seq->updateLeds();
     #endif
     }
+    //==================UPDATE DISPLAY====================
+    void updateDisplayCallback()
+    {
+        displayDriver->update();
+    }
     //=======================GENRAL SETUP STUFF============
     void initWifi()
     {
@@ -199,7 +206,7 @@ We can divide program into 3 tasks:
     {
         Serial.begin(115200);
 
-
+        displayDriver.reset(new OLEDDriver());
         seq.reset(new Sequencer());
         initWifi();
         // Set up buttons
@@ -216,14 +223,10 @@ We can divide program into 3 tasks:
         bButtonConfig.setFeature(ButtonConfig::kFeatureLongPress);
         bButtonConfig.setFeature(ButtonConfig::kFeatureSuppressAfterClick);
         bButtonConfig.setLongPressDelay(800);
-
     }
-
-
-
 void OLEDLog::println(std::string str)
 {
-  OLEDLog::printToDisplay(str, seq->getDisplay(), logDeque);
+    displayDriver->addMessage(str);
 }
 
 void setup() 

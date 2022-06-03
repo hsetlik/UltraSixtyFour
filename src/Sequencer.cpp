@@ -1,10 +1,8 @@
 #include "Sequencer.h"
 
-Sequencer::Sequencer() : pixels(24, PIXEL_PIN, NEO_RGB + NEO_KHZ800),
-                         display(SCREEN_WIDTH, SCREEN_HEIGHT)
+Sequencer::Sequencer() : pixels(24, PIXEL_PIN, NEO_RGB + NEO_KHZ800)
 {
-    Wire.begin(SDA, SCL);
-    Serial.println("Creating sequencer");
+    OLEDLog::println("Creating sequencer");
     digitalWrite(PIXEL_PIN, LOW);
     pixels.setBrightness(40);
     pixels.begin();
@@ -12,19 +10,10 @@ Sequencer::Sequencer() : pixels(24, PIXEL_PIN, NEO_RGB + NEO_KHZ800),
         pixels.clear(); 
         pixels.show();
     #endif
-    Serial.println("Initialized neo pixels");
+    OLEDLog::println("Initialized neo pixels");
     // set up DACS
 
-    if (!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS))
-    {
-        Serial.println("Could not start display!");
-        for (;;)
-            ; // Don't proceed, loop forever
-    } else 
-    {
-        Serial.println("Display started successfully");
-    }
-    display.display();
+
     Serial.println("Display started");
     pinMode(GATE1, OUTPUT);
     pinMode(GATE2, OUTPUT);
@@ -51,10 +40,8 @@ Sequencer::Sequencer() : pixels(24, PIXEL_PIN, NEO_RGB + NEO_KHZ800),
     Serial.println("DAC 1 initialized");
     Serial.println("DAC outputs set");
     std::string maxStr = "Max value is: " + std::to_string(dac1.maxValue());
-    Serial.println(maxStr.c_str());
+    OLEDLog::println(maxStr.c_str());
     bootAnim.start();
-    display.clearDisplay();
-    display.display();
 
 }
 
@@ -78,21 +65,25 @@ void Sequencer::buttonPressed(uint8_t id)
         }
         case Track1:
         {
+            OLEDLog::println("Track 1");
             currentSequence.currentTrack = 0;
             break;
         }
         case Track2:
         {
+            OLEDLog::println("Track 2");
             currentSequence.currentTrack = 1;
             break;
         }
         case Track3:
         {
+            OLEDLog::println("Track 3");
             currentSequence.currentTrack = 2;
             break;
         }
         case Track4:
         {
+            OLEDLog::println("Track 4");
             currentSequence.currentTrack = 3;
             break;
         }
