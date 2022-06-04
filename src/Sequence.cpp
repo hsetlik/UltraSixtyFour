@@ -13,22 +13,28 @@ void Step::addToJsonArray(JsonArray& arr)
     obj["length"] = length;
 }
 
-uint16_t Step::encode()
+uint16_t Step::encode() const
 {
-   /* 
-   A step can be represented in 2 bytes. The first byte represents the midi number. With a range of 0-255, the midi number needs all 8 bits.
-   The gate lentgh has a range of 0-99, which can be represented in only 7 bits (max value 127). The final bit can be use to store the gate status.
-   Byte 1:
-   00101101 - represents midi number 45
-   Byte 2:
-   01010000 - the leftmost bit represents the gate status, the remaining seven bits represent the gate length (80 in this case)
-   */
-   uint16_t value = midiNumber; // the midi number should only use the rightmost 8 bits, so the leftmost 8 bits should be cleared
-   value = value << 8; // move the midi number to the left byte
-   uint16_t len16 = length; // length again uses only rightmost byte
-   setBit(len16, 7, gate); // set 8th bit for the gate
-   //combine the two bits
-   return value & len16;
+    /*
+    A step can be represented in 2 bytes. The first byte represents the midi number. With a range of 0-255, the midi number needs all 8 bits.
+    The gate lentgh has a range of 0-99, which can be represented in only 7 bits (max value 127). The final bit can be use to store the gate status.
+    Byte 1:
+    00101101 - represents midi number 45
+    Byte 2:
+    01010000 - the leftmost bit represents the gate status, the remaining seven bits represent the gate length (80 in this case)
+    */
+    uint16_t value = midiNumber;  // the midi number should only use the rightmost 8 bits, so the leftmost 8 bits should be cleared
+    value = value << 8;           // move the midi number to the left byte
+    //OLEDLog::println("MIDI: " + std::to_string(value));
+    uint16_t len16 = length;      // length again uses only rightmost byte
+    if (gate)
+        len16 |= 1 << 7;
+    else
+        len16 &= ~(1 << 7);
+    //OLEDLog::println("LENGTH: " + std::to_string(len16));
+    // combine the two bits
+    OLEDLog::println("ENCODED: " + std::to_string(value | len16));
+    return value | len16;
 }
 
 Step Step::decode(uint16_t value)
@@ -38,7 +44,7 @@ Step Step::decode(uint16_t value)
     len = len >> 8;
     bool gate = len >> 7 > 0; //shift to onlt the last bit to check the gate
     //ensure that out length is within 7 bit range and disregard the gate bit
-    setBit(len, 7, false);
+    len &= ~(1 << 7);
     Step step;
     step.midiNumber = (uint8_t)midi;
     step.length = (uint8_t)len;
@@ -46,13 +52,6 @@ Step Step::decode(uint16_t value)
     return step;
 }
 
-static void setBit(uint16_t& num, uint8_t idx, bool value)
-{
-    if (value)
-        num |= 1 << idx;
-    else
-        num &= ~(1 << idx);
-}
 //=====================TRACK==============================
 int Track::lastOnStep(uint8_t idx)
 {
@@ -80,7 +79,9 @@ std::string Track::encode()
     std::string output = "";
     for (auto& step : steps)
     {
-        output += std::to_string(step.encode()) + ':';
+        auto chunk = std::to_string(step.encode()) + ':';
+        //OLEDLog::println("Step: " + chunk);
+        output += chunk; 
     }
     return output;
 }
@@ -128,6 +129,9 @@ Sequence Sequence::decode(std::string str)
 {
     Sequence seq;
     //split the string up into lines
+    std::string lStr = "Decoding from " + std::to_string(str.size()) + " characters";
+    OLEDLog::println(lStr);
+    delay(1000);
     std::vector<std::string> lines = {};
     std::string curr = "";
     for (auto& c : str)
@@ -139,7 +143,10 @@ Sequence Sequence::decode(std::string str)
         }
         curr += c;
     }
+    OLEDLog::println(std::to_string(lines.size()) + " lines in file");
+    delay(300);
     seq.setTempo(std::stoi(lines[0]));
+    OLEDLog::println("Tempo: " + lines[0]);
     for (uint8_t trk = 0; trk < 4; ++trk)
     {
         seq.tracks[trk] = Track::decode(lines[trk + 1]);

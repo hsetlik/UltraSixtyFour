@@ -4,6 +4,8 @@
 #include <SPIFFS.h>
 #include <string>
 
+#define AUTOSAVE_FILENAME "autosave_pattern"
+
 class SequenceFilesystem
 {
 private:

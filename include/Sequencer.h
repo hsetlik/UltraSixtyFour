@@ -4,11 +4,11 @@
 #include <Wire.h>
 #include <Adafruit_SSD1306.h>
 #include <MCP_DAC.h>
-#include "Sequence.h"
 #include "OLEDLog.h"
 #include "BootAnimation.h"
 #include "TrackClearAnimation.h"
 #include "ApplyPageAnimation.h"
+#include "SequenceFilesystem.h"
 
 // Macro to turn the pixels off for serial debugging
 #define USE_NEOPIXELS true
@@ -96,7 +96,6 @@ private:
 
     Adafruit_NeoPixel pixels;
 
-
     Sequence currentSequence;
 
     BootAnimation bootAnim;
@@ -104,6 +103,8 @@ private:
     TrackClearAnimation trackClearAnim;
 
     ApplyPageAnimation applyPageAnim;
+
+    SequenceFilesystem fileSystem;
 
     static uint16_t levelForMidiNote(uint16_t note)
     {
@@ -115,6 +116,7 @@ private:
     void setTrackPixel(byte idx, uint32_t color);
     unsigned long lastUpdated = 0;
     unsigned long ledLastUpdated = 0;
+    unsigned long autosaves = 0;
 
     void writeToDac(bool useFirst, bool channel, uint16_t value);
     unsigned long loopIdx;
@@ -127,10 +129,11 @@ public:
     void updateLeds();
     void updateDACs();
     void updateGates();
-    void updateDisplay();   
     void buttonPressed(uint8_t id);
     void buttonHeld(uint8_t id);
     void encoderTurned(uint8_t id, bool dir);
+    void autosave();
+    void loadAutosaved();
 };
 
 #endif // !SEQUENCER_H

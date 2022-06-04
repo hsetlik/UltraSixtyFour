@@ -24,6 +24,7 @@
 #include <vector>
 #include <SPI.h>
 #include "Quantize.h"
+#include "OLEDLog.h"
 
 using namespace Quantize;
 
@@ -40,8 +41,7 @@ struct Step
     //gate length as a percentage of the length of one step 
     uint8_t length;
     void addToJsonArray(JsonArray& arr);
-    uint16_t encode();
-    static void setBit(uint16_t& num, uint8_t idx, bool value);
+    uint16_t encode() const;
     static Step decode(uint16_t value);
 };
 

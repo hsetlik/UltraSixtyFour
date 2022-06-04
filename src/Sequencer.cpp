@@ -42,7 +42,7 @@ Sequencer::Sequencer() : pixels(24, PIXEL_PIN, NEO_RGB + NEO_KHZ800)
     std::string maxStr = "Max value is: " + std::to_string(dac1.maxValue());
     OLEDLog::println(maxStr.c_str());
     bootAnim.start();
-
+    loadAutosaved();
 }
 
 void Sequencer::buttonPressed(uint8_t id)
@@ -52,6 +52,7 @@ void Sequencer::buttonPressed(uint8_t id)
     {
         case MenuL:
         {
+            //loadAutosaved();
             break;
         }
         case MenuR:
@@ -89,6 +90,7 @@ void Sequencer::buttonPressed(uint8_t id)
         }
         case E1:
         {
+            //OLEDLog::println("Loading autosave");
             break;
         }
         case E2:
@@ -230,6 +232,7 @@ void Sequencer::encoderTurned(uint8_t id, bool dir)
         }
         case 3:
         {
+            OLEDLog::println("Encoder 3 turned");
             break;
         }
         default:
@@ -297,12 +300,6 @@ void Sequencer::updateGates()
 {
     currentSequence.updateGates(GATE1, GATE2, GATE3, GATE4);
 }
-
-void Sequencer::updateDisplay()
-{
-
-}
-
 void Sequencer::writeToDac(bool useFirst, bool channel, uint16_t value)
 {
     auto *dacToUse = useFirst ? &dac1 : &dac2;
@@ -336,5 +333,23 @@ void Sequencer::setLevelForTrack(uint8_t trk, uint16_t mV)
     }
     default:
         break;
+    }
+}
+
+void Sequencer::autosave()
+{
+    if (!currentSequence.isPlaying)
+    {
+        fileSystem.save(AUTOSAVE_FILENAME, currentSequence);
+        OLEDLog::println("Autosave " + std::to_string(autosaves) + " finished");
+        autosaves += 1;
+    }
+}
+
+void Sequencer::loadAutosaved()
+{
+    if (!currentSequence.isPlaying)
+    {
+        fileSystem.load(AUTOSAVE_FILENAME, currentSequence);
     }
 }

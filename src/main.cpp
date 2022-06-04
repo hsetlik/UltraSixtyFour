@@ -45,6 +45,8 @@ We can divide program into 3 tasks:
 
     void updatePixelsCallback();
 
+    void autosaveCallback();
+
     void setupScheduler();
 
     Scheduler scheduler;
@@ -52,7 +54,7 @@ We can divide program into 3 tasks:
     Task tUpdatePixels((1000 / LED_REFRESH_HZ) * TASK_MILLISECOND, TASK_FOREVER, &updatePixelsCallback, &scheduler, true);
     Task tPollInputs(TASK_IMMEDIATE, TASK_FOREVER, &pollInputsCallback, &scheduler, true);
     Task tUpdateDisplay((1000 / OLED_REFRESH_HZ) * TASK_MILLISECOND, TASK_FOREVER, &updateDisplayCallback, &scheduler, true);
-
+    Task tAutosave(40 * TASK_SECOND, TASK_FOREVER, &autosaveCallback, &scheduler, true);
     //==========================================================
     using ace_button::AceButton;
     using ace_button::ButtonConfig;
@@ -170,6 +172,11 @@ We can divide program into 3 tasks:
     {
         displayDriver->update();
     }
+    //==================AUTOSAVE=============
+    void autosaveCallback()
+    {
+        seq->autosave();
+    }
     //=======================GENRAL SETUP STUFF============
     void initWifi()
     {
@@ -186,7 +193,7 @@ We can divide program into 3 tasks:
         }
         while (WiFi.status() != WL_CONNECTED)
         {
-            delay(500);
+            delay(100);
             //Serial.print(".");
         }
         //Serial.println();
@@ -208,6 +215,7 @@ We can divide program into 3 tasks:
 
         displayDriver.reset(new OLEDDriver());
         seq.reset(new Sequencer());
+        //seq->loadAutosaved();
         initWifi();
         // Set up buttons
         pinMode(BUTTONS1, INPUT);
@@ -232,6 +240,8 @@ void OLEDLog::println(std::string str)
 void setup() 
 {
   setupScheduler();
+  OLEDLog::println("Setting up scheduler...");
+  //seq->loadAutosaved();
 }
 void loop()
 {
