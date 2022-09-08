@@ -313,22 +313,22 @@ void Sequencer::setLevelForTrack(uint8_t trk, uint16_t mV)
     {
     case 0:
     {
-        writeToDac(true, false, mV); 
+        writeToDac(false, true, mV); 
         break;
     }
     case 1:
     {
-        writeToDac(true, true, mV);
+        writeToDac(false, false, mV);
         break;
     }
     case 2:
     {
-        writeToDac(false, false, mV);
+        writeToDac(true, false, mV);
         break;
     }
     case 3:
     {
-        writeToDac(false, true, mV);
+        writeToDac(true, true, mV);
         break;
     }
     default:
@@ -338,12 +338,9 @@ void Sequencer::setLevelForTrack(uint8_t trk, uint16_t mV)
 
 void Sequencer::autosave()
 {
-    if (!currentSequence.isPlaying)
-    {
-        fileSystem.save(AUTOSAVE_FILENAME, currentSequence);
-        OLEDLog::println("Autosave " + std::to_string(autosaves) + " finished");
-        autosaves += 1;
-    }
+    fileSystem.save(AUTOSAVE_FILENAME, currentSequence);
+    OLEDLog::println("Autosave " + std::to_string(autosaves) + " finished");
+    autosaves += 1;
 }
 
 void Sequencer::loadAutosaved()

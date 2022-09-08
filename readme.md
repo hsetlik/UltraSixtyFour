@@ -15,7 +15,7 @@ The Ultra 64 is a powerful hardware step sequencer built to Eurorack standards. 
   - [**Software**](#software)
     - [**Approach and hardware considerations**](#approach-and-hardware-considerations)
     - [**Develoment environment and dependencies**](#develoment-environment-and-dependencies)
-    - [**Interesting/challenging bits**](#interestingchallenging-bits)
+    - [**Pattern files**](#pattern-files)
 
 ## **Controls and features**
 
@@ -73,6 +73,10 @@ Having never used an ESP32 before, my assumption was to treat the board more or 
 
 All this code was written in Visual Studio Code with the [PlatformIO IDE](https://platformio.org/) extension, which handles serial communication, flashing firmware to the microcontroller, and managing devices and bootloaders. PlatformIO also comes with a very powerful package manager and dependency handling system which makes working with C++ libraries uncharacteristically easy. I make a point of limiting dependencies and not relying on a laundry list of 3rd-party libraries. But certain libraries, namely those built to handle basic communication with other hardware like a DAC or an SSD1306 display, are invaluable time savers in embedded C++. A full list of dependencies is available in the `platformio.ini` file in this repository.
 
-### **Interesting/challenging bits**
+### **Pattern files**
 
-TODO: talk about analog button handling, JSON patterns, and the pixel animation thing
+At first, my inclination was to simply use a JSON file to represent the pattern. But while JSON is more human-readable and easy to use, it does have drawbacks in this context. Minimizing file size is valuable because 1. the ESP32 has limited flash storage and 2. because auto-saving patterns during playback requires the files to be read and written as quickly as possible.
+
+My own encoding system converts a pattern into a string with 5 lines; the first representing the pattern's tempo and the others representing the four tracks. Each track is represented as a colon-separated list of steps, with each step represented as a single 16-bit value. Encoding a step means representing two numbers and a boolean, the MIDI number, the note length, and whether the gate is switched on. The MIDI number can be represented as an 8-bit integer, its value is shifted into the leftmost byte of the 16-bit buffer. This leaves us with just one byte to represent both the note length and the gate status. The fact that the note length value cannot be greater than 99 allows us to use only 7 bits of the remaining 8 (7 bits can represent an unsigned integer value up to 127). Knowing that we need to decode the note length from only 7 bits (treat the 8th bit as if it's always 0 in other words), the 8th bit can be used to represent the gate.
+
+Let's say we need to encode a note with a MIDI number 45, a length of 80, and the gate turned on. The first byte of the encoded step is the MIDI number 45: **00101101**. The second byte starts with the length number 80: **01010000**. Since the gate is on and we know that the length value is below 127, we set the leftmost bit of the second byte to get: **11010000**. In total, the 16-bit representation of the step is: **00101101 11010000**, or an unsigned integer value of 11728.

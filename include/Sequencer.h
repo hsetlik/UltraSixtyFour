@@ -42,8 +42,8 @@
 
 //gate outputs
 #define GATE1 15
-#define GATE2 4
-#define GATE3 2
+#define GATE2 2
+#define GATE3 4
 #define GATE4 16
 
 //NeoPixels data line
@@ -58,16 +58,11 @@
 
 
 /*
-Vout = 10.56 * (value / 4095)
-Vnote = (1 / 12) * note
-1/12 V = ~83.333mV
-10.56 / 4095 = 0.002579
-~2.579 mV / DAC integer
-83.33333333 / 2.579 = 32.312
+
 
 */
 
-#define HALFSTEP_INCREMENT 25.644f
+#define HALFSTEP_INCREMENT 26.167f
 
 //Corresponds to index passed by button library in main.cpp
 enum ButtonId

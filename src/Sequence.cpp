@@ -1,7 +1,7 @@
 #include "Sequence.h"
 
 //=====================STEP==============================
-Step::Step() : midiNumber(45), gate(false), length(80)
+Step::Step() : midiNumber(21), gate(false), length(80)
 {
 }
 
