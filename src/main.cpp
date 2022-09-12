@@ -35,213 +35,219 @@ We can divide program into 3 tasks:
 #include <AsyncTCP.h>
 #include "OLEDDriver.h"
 
-    /*==========================================================
-    Task scheduling stuff
-    ==========================================================*/
-    // Forward declared callbacks
-    void pollInputsCallback();
+// implement OLEDLog
 
-    void updateDisplayCallback();
+/*==========================================================
+Task scheduling stuff
+==========================================================*/
+// Forward declared callbacks
+void pollInputsCallback();
 
-    void updatePixelsCallback();
+void updateDisplayCallback();
 
-    void autosaveCallback();
+void updatePixelsCallback();
 
-    void setupScheduler();
+void autosaveCallback();
 
-    Scheduler scheduler;
+void setupScheduler();
 
-    Task tUpdatePixels((1000 / LED_REFRESH_HZ) * TASK_MILLISECOND, TASK_FOREVER, &updatePixelsCallback, &scheduler, true);
-    Task tPollInputs(TASK_IMMEDIATE, TASK_FOREVER, &pollInputsCallback, &scheduler, true);
-    Task tUpdateDisplay((1000 / OLED_REFRESH_HZ) * TASK_MILLISECOND, TASK_FOREVER, &updateDisplayCallback, &scheduler, true);
-    Task tAutosave(40 * TASK_SECOND, TASK_FOREVER, &autosaveCallback, &scheduler, true);
-    //==========================================================
-    using ace_button::AceButton;
-    using ace_button::ButtonConfig;
-    using ace_button::LadderButtonConfig;
+Scheduler scheduler;
 
-    std::unique_ptr<Sequencer> seq(nullptr);
+Task tUpdatePixels((1000 / LED_REFRESH_HZ) * TASK_MILLISECOND, TASK_FOREVER, &updatePixelsCallback, &scheduler, true);
+Task tPollInputs(TASK_IMMEDIATE, TASK_FOREVER, &pollInputsCallback, &scheduler, true);
+Task tUpdateDisplay((1000 / OLED_REFRESH_HZ) * TASK_MILLISECOND, TASK_FOREVER, &updateDisplayCallback, &scheduler, true);
+Task tAutosave(40 * TASK_SECOND, TASK_FOREVER, &autosaveCallback, &scheduler, true);
+//==========================================================
+using ace_button::AceButton;
+using ace_button::ButtonConfig;
+using ace_button::LadderButtonConfig;
 
-    std::unique_ptr<OLEDDriver> displayDriver(nullptr);
+std::unique_ptr<Sequencer> seq(nullptr);
 
-    std::deque<std::string> logDeque;
+std::unique_ptr<OLEDDriver> displayDriver(nullptr);
 
-    //=====Button Stuff======================
-    void handlePress(uint8_t idx) { seq->buttonPressed(idx); }
-    void handleHold(uint8_t idx) { seq->buttonHeld(idx); }
+std::deque<std::string> logDeque;
 
-    // Group A
-    const byte aNumButtons = 7;
-    static AceButton trk1(nullptr, 0);
-    static AceButton trk2(nullptr, 1);
-    static AceButton trk3(nullptr, 2);
-    static AceButton trk4(nullptr, 3);
-    static AceButton play(nullptr, 4);
-    static AceButton menuLeft(nullptr, 5);
-    static AceButton menuRight(nullptr, 6);
+//=====Button Stuff======================
+void handlePress(uint8_t idx) { seq->buttonPressed(idx); }
+void handleHold(uint8_t idx) { seq->buttonHeld(idx); }
 
-    static AceButton *const aButtons[] = {&trk1, &trk2, &trk3, &trk4, &play, &menuLeft, &menuRight};
-    // measured voltage levels for each button
-    static const uint16_t aLevels[] = {307, 708, 1113, 1519, 1962, 2473, 3136};
+// Group A
+const byte aNumButtons = 7;
+static AceButton trk1(nullptr, 0);
+static AceButton trk2(nullptr, 1);
+static AceButton trk3(nullptr, 2);
+static AceButton trk4(nullptr, 3);
+static AceButton play(nullptr, 4);
+static AceButton menuLeft(nullptr, 5);
+static AceButton menuRight(nullptr, 6);
 
-    static LadderButtonConfig aButtonConfig(BUTTONS1, aNumButtons, aLevels, aNumButtons, aButtons);
+static AceButton *const aButtons[] = {&trk1, &trk2, &trk3, &trk4, &play, &menuLeft, &menuRight};
+// measured voltage levels for each button
+static const uint16_t aLevels[] = {307, 708, 1113, 1519, 1962, 2473, 3136};
 
-    // Group B
-    const byte bNumButtons = 6;
-    static AceButton e1(nullptr, 0);
-    static AceButton e2(nullptr, 1);
-    static AceButton e3(nullptr, 2);
-    static AceButton e4(nullptr, 3);
-    static AceButton lPage(nullptr, 4);
-    static AceButton rPage(nullptr, 5);
+static LadderButtonConfig aButtonConfig(BUTTONS1, aNumButtons, aLevels, aNumButtons, aButtons);
 
-    static AceButton *const bButtons[] = {&e1, &e2, &e3, &e4, &lPage, &rPage};
-    static AceButton *const allButtons[] = {&trk1, &trk2, &trk3, &trk4, &play, &menuLeft, &menuRight, &e1, &e2, &e3, &e4, &lPage, &rPage};
-    // measured voltage levels for each button
-    static const uint16_t bLevels[] = {482, 1117, 1748, 2386, 2896, 3553};
+// Group B
+const byte bNumButtons = 6;
+static AceButton e1(nullptr, 0);
+static AceButton e2(nullptr, 1);
+static AceButton e3(nullptr, 2);
+static AceButton e4(nullptr, 3);
+static AceButton lPage(nullptr, 4);
+static AceButton rPage(nullptr, 5);
 
-    static LadderButtonConfig bButtonConfig(BUTTONS2, bNumButtons, bLevels, bNumButtons, bButtons);
-    // common button stuff
-    void handleEvent(AceButton *button, uint8_t eventType, uint8_t buttonState);
-    // Encoder stuff========================
-    long pos[] = {0, 0, 0, 0};
+static AceButton *const bButtons[] = {&e1, &e2, &e3, &e4, &lPage, &rPage};
+static AceButton *const allButtons[] = {&trk1, &trk2, &trk3, &trk4, &play, &menuLeft, &menuRight, &e1, &e2, &e3, &e4, &lPage, &rPage};
+// measured voltage levels for each button
+static const uint16_t bLevels[] = {482, 1117, 1748, 2386, 2896, 3553};
 
-    RotaryEncoder encA(ADATA, ACLK, RotaryEncoder::LatchMode::FOUR3);
-    RotaryEncoder encB(BDATA, BCLK, RotaryEncoder::LatchMode::FOUR3);
-    RotaryEncoder encC(CDATA, CCLK, RotaryEncoder::LatchMode::FOUR3);
-    RotaryEncoder encD(DDATA, DCLK, RotaryEncoder::LatchMode::FOUR3);
+static LadderButtonConfig bButtonConfig(BUTTONS2, bNumButtons, bLevels, bNumButtons, bButtons);
+// common button stuff
+void handleEvent(AceButton *button, uint8_t eventType, uint8_t buttonState);
+// Encoder stuff========================
+long pos[] = {0, 0, 0, 0};
 
-    RotaryEncoder *encoders[] = {&encA, &encB, &encC, &encD};
+RotaryEncoder encA(ADATA, ACLK, RotaryEncoder::LatchMode::FOUR3);
+RotaryEncoder encB(BDATA, BCLK, RotaryEncoder::LatchMode::FOUR3);
+RotaryEncoder encC(CDATA, CCLK, RotaryEncoder::LatchMode::FOUR3);
+RotaryEncoder encD(DDATA, DCLK, RotaryEncoder::LatchMode::FOUR3);
 
-    //==============Server Stuff============
-    std::string ssid = "SD Airport";
-    std::string password = "plinsky1737";
-    AsyncWebServer server(80);
-    void initWifi();
-    // to be accessed from main.cpp
-    void handleEncoderMove(uint8_t idx, bool dir)
+RotaryEncoder *encoders[] = {&encA, &encB, &encC, &encD};
+//======================================
+void OLEDLog::println(const char *str)
+{
+    displayDriver->addMessage(str);
+}
+
+//==============Server Stuff============
+std::string ssid = "SD Airport";
+std::string password = "plinsky1737";
+AsyncWebServer server(80);
+void initWifi();
+// to be accessed from main.cpp
+void handleEncoderMove(uint8_t idx, bool dir)
+{
+    seq->encoderTurned(idx, dir);
+}
+void pollInputsCallback()
+{
+    for (byte i = 0; i < 4; i++)
     {
-        seq->encoderTurned(idx, dir);
-    }
-    void pollInputsCallback()
-    {
-        for (byte i = 0; i < 4; i++)
+        encoders[i]->tick();
+        long newPos = encoders[i]->getPosition();
+        if (newPos != pos[i])
         {
-            encoders[i]->tick();
-            long newPos = encoders[i]->getPosition();
-            if (newPos != pos[i])
-            {
-                // OLEDLog::println("encoder moved");
-                handleEncoderMove(i, newPos > pos[i]);
-                pos[i] = newPos;
-            }
-        }
-        static uint16_t prev = millis();
-        uint16_t now = millis();
-        if ((uint16_t)(now - prev) >= 3)
-        {
-            prev = now;
-            bButtonConfig.checkButtons();
-            aButtonConfig.checkButtons();
+            // OLEDLog::println("encoder moved");
+            handleEncoderMove(i, newPos > pos[i]);
+            pos[i] = newPos;
         }
     }
-
-    void handleEvent(AceButton *button, uint8_t eventType, uint8_t buttonState)
+    static uint16_t prev = millis();
+    uint16_t now = millis();
+    if ((uint16_t)(now - prev) >= 3)
     {
-        for (byte i = 0; i < aNumButtons + bNumButtons; ++i)
+        prev = now;
+        bButtonConfig.checkButtons();
+        aButtonConfig.checkButtons();
+    }
+}
+
+void handleEvent(AceButton *button, uint8_t eventType, uint8_t buttonState)
+{
+    for (byte i = 0; i < aNumButtons + bNumButtons; ++i)
+    {
+        if (allButtons[i] == button)
         {
-            if (allButtons[i] == button)
-            {
-                if (eventType == AceButton::kEventClicked)
-                    handlePress(i);
-                else if (eventType == AceButton::kEventLongPressed)
-                    handleHold(i);
-                return;
-            }
+            if (eventType == AceButton::kEventClicked)
+                handlePress(i);
+            else if (eventType == AceButton::kEventLongPressed)
+                handleHold(i);
+            return;
         }
     }
-    //===================UPDATE PIXELS====================
-    void updatePixelsCallback()
-    {
-    #if USE_NEOPIXELS
-      seq->updateLeds();
-    #endif
-    }
-    //==================UPDATE DISPLAY====================
-    void updateDisplayCallback()
-    {
-        displayDriver->update();
-    }
-    //==================AUTOSAVE=============
-    void autosaveCallback()
-    {
-        seq->autosave();
-    }
-    //=======================GENRAL SETUP STUFF============
-    void initWifi()
-    {
-        WiFi.mode(WIFI_STA);
+}
+//===================UPDATE PIXELS====================
+void updatePixelsCallback()
+{
+#if USE_NEOPIXELS
+    seq->updateLeds();
+#endif
+}
+//==================UPDATE DISPLAY====================
+void updateDisplayCallback()
+{
+    displayDriver->update();
+}
+//==================AUTOSAVE=============
+void autosaveCallback()
+{
+    seq->autosave();
+}
+//=======================GENRAL SETUP STUFF============
+void initWifi()
+{
+    WiFi.mode(WIFI_STA);
 
-        auto res = WiFi.begin(ssid.c_str(), password.c_str());
-        if (res == WL_CONNECT_FAILED)
-        {
-            OLEDLog::println("Connection failed");
-        }
-        else if (res == WL_NO_SSID_AVAIL)
-        {
-            // OledLog::writeLn("Network " + ssid + " not available");
-        }
-        while (WiFi.status() != WL_CONNECTED)
-        {
-            delay(100);
-            //Serial.print(".");
-        }
-        //Serial.println();
-        auto ip = WiFi.localIP();
-        std::string logString = "Connected to " + ssid + " with IP address " + ip.toString().c_str();
-        //Serial.println(logString.c_str());
-
-        server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
-                  { request->send(200, "text/plain", "Hi! I am ESP32."); });
-        AsyncElegantOTA.begin(&server); // Start ElegantOTA
-        server.begin();
-        if (res != WL_CONNECT_FAILED)
-            OLEDLog::println("Connection succeded");
-    }
-
-    void setupScheduler()
+    auto res = WiFi.begin(ssid.c_str(), password.c_str());
+    if (res == WL_CONNECT_FAILED)
     {
-        Serial.begin(115200);
-
-        displayDriver.reset(new OLEDDriver());
-        seq.reset(new Sequencer());
-        //seq->loadAutosaved();
-        initWifi();
-        // Set up buttons
-        pinMode(BUTTONS1, INPUT);
-        pinMode(BUTTONS2, INPUT);
-        aButtonConfig.setEventHandler(handleEvent);
-        aButtonConfig.setFeature(ButtonConfig::kFeatureClick);
-        aButtonConfig.setFeature(ButtonConfig::kFeatureLongPress);
-        aButtonConfig.setFeature(ButtonConfig::kFeatureSuppressAfterLongPress);
-        aButtonConfig.setLongPressDelay(800);
-
-        bButtonConfig.setEventHandler(handleEvent);
-        bButtonConfig.setFeature(ButtonConfig::kFeatureClick);
-        bButtonConfig.setFeature(ButtonConfig::kFeatureLongPress);
-        bButtonConfig.setFeature(ButtonConfig::kFeatureSuppressAfterClick);
-        bButtonConfig.setLongPressDelay(800);
+        OLEDLog::println("Connection failed");
     }
+    else if (res == WL_NO_SSID_AVAIL)
+    {
+        // OledLog::writeLn("Network " + ssid + " not available");
+    }
+    while (WiFi.status() != WL_CONNECTED)
+    {
+        delay(100);
+        // Serial.print(".");
+    }
+    // Serial.println();
+    auto ip = WiFi.localIP();
+    OLEDLog::println(ip.toString().c_str());
+    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
+              { request->send(200, "text/plain", "Hi! I am ESP32."); });
+    AsyncElegantOTA.begin(&server); // Start ElegantOTA
+    server.begin();
+    if (res != WL_CONNECT_FAILED)
+        OLEDLog::println("Connection succeded");
+}
+
+void setupScheduler()
+{
+    Serial.begin(115200);
+
+    displayDriver.reset(new OLEDDriver());
+    seq.reset(new Sequencer());
+    // seq->loadAutosaved();
+    initWifi();
+    // Set up buttons
+    pinMode(BUTTONS1, INPUT);
+    pinMode(BUTTONS2, INPUT);
+    aButtonConfig.setEventHandler(handleEvent);
+    aButtonConfig.setFeature(ButtonConfig::kFeatureClick);
+    aButtonConfig.setFeature(ButtonConfig::kFeatureLongPress);
+    aButtonConfig.setFeature(ButtonConfig::kFeatureSuppressAfterLongPress);
+    aButtonConfig.setLongPressDelay(800);
+
+    bButtonConfig.setEventHandler(handleEvent);
+    bButtonConfig.setFeature(ButtonConfig::kFeatureClick);
+    bButtonConfig.setFeature(ButtonConfig::kFeatureLongPress);
+    bButtonConfig.setFeature(ButtonConfig::kFeatureSuppressAfterClick);
+    bButtonConfig.setLongPressDelay(800);
+}
 void OLEDLog::println(std::string str)
 {
     displayDriver->addMessage(str);
 }
 
-void setup() 
+void setup()
 {
-  setupScheduler();
-  OLEDLog::println("Setting up scheduler...");
-  //seq->loadAutosaved();
+    Serial.begin(115200);
+    setupScheduler();
+    OLEDLog::println("Setting up scheduler...");
+    // seq->loadAutosaved();
 }
 void loop()
 {

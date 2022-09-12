@@ -33,7 +33,7 @@ uint16_t Step::encode() const
         len16 &= ~(1 << 7);
     //OLEDLog::println("LENGTH: " + std::to_string(len16));
     // combine the two bits
-    OLEDLog::println("ENCODED: " + std::to_string(value | len16));
+    //OLEDLog::println("ENCODED: " + std::to_string(value | len16));
     return value | len16;
 }
 
@@ -116,10 +116,10 @@ isPlaying(false),
 quantizeMode(false),
 lengthMode(false),
 pageMode(false),
-tempo(200),
-periodMicros(0),
-microsIntoPeriod(0),
-lastMicros(0)
+tempo(120),
+periodMillis(0),
+millisIntoPeriod(0),
+lastMillis(0)
 {
     setTempo(tempo);
     //initDummySequence();
@@ -156,11 +156,11 @@ Sequence Sequence::decode(std::string str)
 
 void Sequence::checkAdvance()
 {
-    auto now = micros();
-    microsIntoPeriod += (now - lastMicros);
-    if (microsIntoPeriod >= periodMicros)
+    auto now = millis();
+    millisIntoPeriod += (now - lastMillis);
+    if (millisIntoPeriod >= periodMillis)
         advance();
-    lastMicros = now;
+    lastMillis = now;
 }
 
 std::string Sequence::encode()
@@ -173,7 +173,7 @@ std::string Sequence::encode()
 
 void Sequence::advance()
 {
-    microsIntoPeriod -= periodMicros;
+    millisIntoPeriod -= periodMillis;
     auto max = (pageMode) ? PAGE_LENGTH : SEQ_LENGTH;
     if (isPlaying)
         currentStep = (currentStep + 1) % max;
@@ -195,15 +195,15 @@ void Sequence::updateGates(uint8_t p1, uint8_t p2, uint8_t p3, uint8_t p4)
         //Do nothing if the track is empty
         if (lastOn == -1)
             continue;
-        auto stepStart = now - microsIntoPeriod;
+        auto stepStart = now - millisIntoPeriod;
         //if this is a gate from a previous step we need to offset by period * num. steps apart
         if (lastOn != currentStep)
         {
-            auto offset = (unsigned long)abs(currentStep - lastOn) * periodMicros;
+            auto offset = (unsigned long)abs(currentStep - lastOn) * periodMillis;
             stepStart -= offset;
         }
         //length of the gate in microseconds
-        auto length = (unsigned long)(periodMicros * (float)(trk.steps[lastOn].length / 100.0f));
+        auto length = (unsigned long)(periodMillis * (float)(trk.steps[lastOn].length / 100.0f));
         auto gateOver = now >= stepStart + length;
         //Turn on the gate as needed
         if (lastOn == currentStep && !gateOver)
@@ -234,12 +234,7 @@ void Sequence::shiftNote(bool dirOrLength)
     if (note < 0)
         note = 0;
 }
-void Sequence::shiftTrack(bool dirOrLength)
-{
-    currentTrack = dirOrLength ? (currentTrack + 1) % NUM_TRACKS : currentTrack - 1;
-    if (currentTrack < 0)
-        currentTrack += NUM_TRACKS;
-}
+
 void Sequence::shiftTempo(bool dirOrLength)
 {
     tempo = dirOrLength ? tempo + 1 : tempo - 1;
@@ -279,7 +274,8 @@ void Sequence::toggleSelectedGate()
 void Sequence::setTempo(int t)
 {
     tempo = t;
-    periodMicros = (unsigned long)(60000000.0f / (float)tempo);
+    periodMillis = (unsigned long)(60000 / tempo);
+    OLEDLog::println("Current Tempo: " + std::to_string(tempo));
 }
 SeqJson Sequence::getJsonDocument(std::string name)
 {

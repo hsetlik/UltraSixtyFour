@@ -84,7 +84,6 @@ public:
     //shifting functions for rotary encoders
     void shiftSelected(bool dirOrLength);
     void shiftNote(bool dirOrLength);
-    void shiftTrack(bool dirOrLength);
     void shiftTempo(bool dirOrLength);
     void shiftGateLength(bool dirOrLength);
     void shiftQuantType(bool dirOrLength);
@@ -111,9 +110,9 @@ public:
 private:
     uint32_t getStepColor(uint8_t idx);
     int tempo;
-    unsigned long periodMicros;
-    unsigned long microsIntoPeriod;
-    unsigned long lastMicros;
+    unsigned long periodMillis;
+    unsigned long millisIntoPeriod;
+    unsigned long lastMillis;
     void advance();
     uint8_t pageForStep(uint8_t step);
     std::array<Step*, PAGE_LENGTH> pageSteps(uint8_t step);

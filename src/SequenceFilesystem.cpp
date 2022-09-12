@@ -51,9 +51,9 @@ bool SequenceFilesystem::save(std::string name, Sequence& seq)
     auto seqStr = seq.encode().c_str();
     auto bytes = file.print(seqStr);
     file.close();
-    auto lStr = "Wrote " + std::to_string(bytes);
-    std::string loc = "At: " + path;
-    OLEDLog::println(lStr);
+    //auto lStr = "Wrote " + std::to_string(bytes);
+    //std::string loc = "At: " + path;
+    //OLEDLog::println(lStr);
     //OLEDLog::println(loc);
     return true;
 }

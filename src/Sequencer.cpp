@@ -232,7 +232,7 @@ void Sequencer::encoderTurned(uint8_t id, bool dir)
         }
         case 3:
         {
-            OLEDLog::println("Encoder 3 turned");
+            //OLEDLog::println("Encoder 3 turned");
             break;
         }
         default:
@@ -339,7 +339,7 @@ void Sequencer::setLevelForTrack(uint8_t trk, uint16_t mV)
 void Sequencer::autosave()
 {
     fileSystem.save(AUTOSAVE_FILENAME, currentSequence);
-    OLEDLog::println("Autosave " + std::to_string(autosaves) + " finished");
+    //OLEDLog::println("Autosave " + std::to_string(autosaves) + " finished");
     autosaves += 1;
 }
 

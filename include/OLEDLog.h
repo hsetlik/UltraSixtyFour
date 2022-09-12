@@ -12,10 +12,7 @@ struct OLEDLog
 public:
     //NOTE: this needs to be implemented in main.cpp with the actual display object
     static void println(std::string str);
-    static void println(const char* str)
-    {
-        println(std::string(str));
-    }
+    static void println(const char* str);
     static void printToDisplay(std::string str, Adafruit_SSD1306* display, std::deque<std::string>& log);
 private:
 };
