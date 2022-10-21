@@ -1,5 +1,5 @@
 #ifndef SEQUENCEFILESYSTEM_H
-
+#define SEQUENCEFILESYSTEM_H
 #include "Sequence.h"
 #include <SPIFFS.h>
 #include <string>

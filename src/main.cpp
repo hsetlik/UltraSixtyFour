@@ -173,7 +173,23 @@ void updatePixelsCallback()
 //==================UPDATE DISPLAY====================
 void updateDisplayCallback()
 {
-    displayDriver->update();
+    /*
+    switch (seq->saveLoadMode)
+    {
+        case (SaveLoadMode::Normal):
+            displayDriver->update();
+            break;
+        case (SaveLoadMode::Load):
+            seq->sequenceBrowser->render(&displayDriver->getDisplay());
+            break;
+        case (SaveLoadMode::Save):
+            seq->stringInput->render(&displayDriver->getDisplay());
+            break;
+        default:
+            break;
+    }
+    */
+   displayDriver->update();
 }
 //==================AUTOSAVE=============
 void autosaveCallback()

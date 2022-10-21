@@ -35,6 +35,7 @@ public:
     ~OLEDDriver();
     void addMessage(std::string str);
     void update();
+    Adafruit_SSD1306& getDisplay() {return display;}
 
 };
 #endif // !OLEDDRIVER_H

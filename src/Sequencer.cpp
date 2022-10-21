@@ -1,12 +1,12 @@
 #include "Sequencer.h"
 
-Sequencer::Sequencer() : pixels(24, PIXEL_PIN, NEO_RGB + NEO_KHZ800), saveLoadMode(Normal), stringInput(nullptr)
+Sequencer::Sequencer() : pixels(24, PIXEL_PIN, NEO_RGB + NEO_KHZ800), saveLoadMode(Normal), stringInput(nullptr), sequenceBrowser(nullptr)
 {
     OLEDLog::println("Creating sequencer");
     digitalWrite(PIXEL_PIN, LOW);
     pixels.setBrightness(40);
     pixels.begin();
-    #if !USE_NEOPIXELS
+    #if !USE_NEOPIXELS 
         pixels.clear(); 
         pixels.show();
     #endif
@@ -45,11 +45,6 @@ Sequencer::Sequencer() : pixels(24, PIXEL_PIN, NEO_RGB + NEO_KHZ800), saveLoadMo
     loadAutosaved();
 }
 
-void Sequencer::handleSaveLoadButton(bool right)
-{
-    
-}
-
 void Sequencer::buttonPressed(uint8_t id)
 {
     ButtonId button = (ButtonId)id;
@@ -57,6 +52,7 @@ void Sequencer::buttonPressed(uint8_t id)
     {
         case MenuL:
         {
+            OLEDLog::println("Left menu button");
             // enter save mode
             if (saveLoadMode == Normal)
             {
@@ -76,6 +72,7 @@ void Sequencer::buttonPressed(uint8_t id)
         }
         case MenuR:
         {
+            OLEDLog::println("Right menu button");
             // enter load mode
             if (saveLoadMode == Normal)
             {
@@ -131,9 +128,15 @@ void Sequencer::buttonPressed(uint8_t id)
             else if (saveLoadMode == Normal) //this and the left menu button both bring up the load menu
             {
                 saveLoadMode == Load;
-                //TODO: display list of loaded sequences
+                sequenceBrowser.reset(new SequenceBrowser(fileSystem));
             }
-                
+            else if (saveLoadMode == Load)
+            {
+                //Load the highlighted sequence and exit the menu
+                fileSystem.load(sequenceBrowser->selectedSequence(), currentSequence);
+                saveLoadMode = Normal;
+                sequenceBrowser.reset(nullptr);
+            }
             break;
         }
         case E2:

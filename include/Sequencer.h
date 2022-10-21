@@ -10,6 +10,7 @@
 #include "ApplyPageAnimation.h"
 #include "SequenceFilesystem.h"
 #include "UserStringInput.h"
+#include "SequenceBrowser.h"
 
 // Macro to turn the pixels off for serial debugging
 #define USE_NEOPIXELS true
@@ -56,12 +57,6 @@
 #define SCREEN_ADDRESS 0x3C
 
 #define MIN_LOOP_PERIOD 1000
-
-
-/*
-
-
-*/
 
 #define HALFSTEP_INCREMENT 26.167f
 
@@ -122,10 +117,13 @@ private:
 
     void writeToDac(bool useFirst, bool channel, uint16_t value);
     unsigned long loopIdx;
+public:
     SaveLoadMode saveLoadMode;
     std::unique_ptr<UserStringInput> stringInput;
+    std::unique_ptr<SequenceBrowser> sequenceBrowser;
 
 public:
+    
     Sequencer();
  //loop subroutines
     void checkAdvance() { currentSequence.checkAdvance(); }
@@ -137,8 +135,6 @@ public:
     void encoderTurned(uint8_t id, bool dir);
     void autosave();
     void loadAutosaved();
-private:
-    void handleSaveLoadButton(bool right);
 };
 
 #endif // !SEQUENCER_H

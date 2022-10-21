@@ -65,6 +65,7 @@ std::vector<std::string> SequenceFilesystem::getSequenceNames()
     if (folder.isDirectory()) {
         auto file = folder.openNextFile(FILE_READ);
     }
+    //TODO
 
     return output;
 }
