@@ -14,6 +14,7 @@ public:
     static void println(std::string str);
     static void println(const char* str);
     static void printToDisplay(std::string str, Adafruit_SSD1306* display, std::deque<std::string>& log);
+    static void logNote(int midiNum);
 private:
 };
 

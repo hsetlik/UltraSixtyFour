@@ -1,6 +1,6 @@
 #include "Sequencer.h"
 
-Sequencer::Sequencer() : pixels(24, PIXEL_PIN, NEO_RGB + NEO_KHZ800)
+Sequencer::Sequencer() : pixels(24, PIXEL_PIN, NEO_RGB + NEO_KHZ800), saveLoadMode(Normal), stringInput(nullptr)
 {
     OLEDLog::println("Creating sequencer");
     digitalWrite(PIXEL_PIN, LOW);
@@ -45,6 +45,11 @@ Sequencer::Sequencer() : pixels(24, PIXEL_PIN, NEO_RGB + NEO_KHZ800)
     loadAutosaved();
 }
 
+void Sequencer::handleSaveLoadButton(bool right)
+{
+    
+}
+
 void Sequencer::buttonPressed(uint8_t id)
 {
     ButtonId button = (ButtonId)id;
@@ -52,11 +57,39 @@ void Sequencer::buttonPressed(uint8_t id)
     {
         case MenuL:
         {
-            //loadAutosaved();
+            // enter save mode
+            if (saveLoadMode == Normal)
+            {
+                saveLoadMode = Save;
+                stringInput.reset(new UserStringInput());
+            }
+            else if (saveLoadMode == Save)
+            {
+                stringInput->backspace();
+            }
+            else if (saveLoadMode == Load) // Exit the load menu with the left button
+            {
+                stringInput.reset(nullptr);
+                saveLoadMode == Normal;
+            }
             break;
         }
         case MenuR:
         {
+            // enter load mode
+            if (saveLoadMode == Normal)
+            {
+                saveLoadMode = Load;
+                //TODO: display list of saved sequences
+            }
+            // As of now, this button isn't used in load mode (21/10/22)
+            else if (saveLoadMode == Save)
+            {
+            }
+            else if (saveLoadMode == Load)
+            {
+
+            }
             break;
         }
         case Play:
@@ -91,6 +124,16 @@ void Sequencer::buttonPressed(uint8_t id)
         case E1:
         {
             //OLEDLog::println("Loading autosave");
+            if (saveLoadMode == Save)
+            {
+                stringInput->enterChar();
+            }
+            else if (saveLoadMode == Normal) //this and the left menu button both bring up the load menu
+            {
+                saveLoadMode == Load;
+                //TODO: display list of loaded sequences
+            }
+                
             break;
         }
         case E2:
@@ -233,6 +276,14 @@ void Sequencer::encoderTurned(uint8_t id, bool dir)
         case 3:
         {
             //OLEDLog::println("Encoder 3 turned");
+            if (saveLoadMode == Save)
+            {
+                
+            }
+            else if (saveLoadMode == Load)
+            {
+
+            }
             break;
         }
         default:

@@ -9,6 +9,7 @@
 #include "TrackClearAnimation.h"
 #include "ApplyPageAnimation.h"
 #include "SequenceFilesystem.h"
+#include "UserStringInput.h"
 
 // Macro to turn the pixels off for serial debugging
 #define USE_NEOPIXELS true
@@ -82,6 +83,12 @@ enum ButtonId
     PageL
 };
 
+enum SaveLoadMode
+{
+    Normal,
+    Save,
+    Load
+};
 class Sequencer
 {
 private:
@@ -115,7 +122,8 @@ private:
 
     void writeToDac(bool useFirst, bool channel, uint16_t value);
     unsigned long loopIdx;
-
+    SaveLoadMode saveLoadMode;
+    std::unique_ptr<UserStringInput> stringInput;
 
 public:
     Sequencer();
@@ -129,6 +137,8 @@ public:
     void encoderTurned(uint8_t id, bool dir);
     void autosave();
     void loadAutosaved();
+private:
+    void handleSaveLoadButton(bool right);
 };
 
 #endif // !SEQUENCER_H

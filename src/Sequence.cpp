@@ -176,7 +176,11 @@ void Sequence::advance()
     millisIntoPeriod -= periodMillis;
     auto max = (pageMode) ? PAGE_LENGTH : SEQ_LENGTH;
     if (isPlaying)
+    {
         currentStep = (currentStep + 1) % max;
+        OLEDLog::logNote(tracks[currentTrack].steps[currentStep].midiNumber);
+    }  
+   
 }
 void Sequence::updateGates(uint8_t p1, uint8_t p2, uint8_t p3, uint8_t p4)
 {

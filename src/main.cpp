@@ -35,11 +35,7 @@ We can divide program into 3 tasks:
 #include <AsyncTCP.h>
 #include "OLEDDriver.h"
 
-// implement OLEDLog
 
-/*==========================================================
-Task scheduling stuff
-==========================================================*/
 // Forward declared callbacks
 void pollInputsCallback();
 

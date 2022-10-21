@@ -3,7 +3,8 @@
 OLEDDriver::OLEDDriver(/* args */) :
 display(DISP_WIDTH, DISP_HEIGHT),
 logMessages({"_unused"}),
-needsUpdate(false)
+needsUpdate(false),
+textInput(nullptr)
 {
     Wire.begin(SDA, SCL);
     if (!display.begin(SSD1306_SWITCHCAPVCC, DISP_ADDRESS))

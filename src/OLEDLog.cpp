@@ -34,3 +34,12 @@ void OLEDLog::printToDisplay(std::string str, Adafruit_SSD1306* display, std::de
     display->println(str.c_str());
     display->display();
 }
+
+void OLEDLog::logNote(int midiNum)
+{
+    static const std::string noteNames[] = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
+    std::string note = noteNames[midiNum % 12];
+    const int octave = (int)midiNum / 12;
+    note += std::to_string(octave);
+    println(note);
+}

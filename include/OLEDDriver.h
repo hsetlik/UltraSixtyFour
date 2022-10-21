@@ -3,6 +3,9 @@
 #include <Adafruit_SSD1306.h>
 #include <string>
 #include <array>
+#include <vector>
+#include <memory>
+#include "UserStringInput.h"
 //I2C pins
 #define SDA 17
 #define SCL 5
@@ -22,9 +25,11 @@ private:
     Adafruit_SSD1306 display;
     std::array<std::string, MAX_LOG_MESSAGES> logMessages;
     bool needsUpdate;
+    std::unique_ptr<UserStringInput> textInput;
 
     void shiftForward();
     uint8_t numSpacesUsed();
+
 public:
     OLEDDriver(/* args */);
     ~OLEDDriver();

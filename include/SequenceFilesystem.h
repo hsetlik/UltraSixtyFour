@@ -20,6 +20,8 @@ public:
     bool load(std::string name, Sequence& seq);
     // Attempts to save the referenced sequence to a file with the given name. Returns success or failure.
     bool save(std::string name, Sequence& seq);
+
+    std::vector<std::string> getSequenceNames();
 };
 
 #endif // !SEQUENCEFILESYSTEM_H

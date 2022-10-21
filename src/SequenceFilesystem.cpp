@@ -51,9 +51,20 @@ bool SequenceFilesystem::save(std::string name, Sequence& seq)
     auto seqStr = seq.encode().c_str();
     auto bytes = file.print(seqStr);
     file.close();
-    //auto lStr = "Wrote " + std::to_string(bytes);
+    auto lStr = "Wrote " + std::to_string(bytes);
     //std::string loc = "At: " + path;
-    //OLEDLog::println(lStr);
+    OLEDLog::println(lStr);
     //OLEDLog::println(loc);
     return true;
+}
+
+std::vector<std::string> SequenceFilesystem::getSequenceNames()
+{
+    std::vector<std::string> output = {};
+    auto folder = fileSystem->open("/", FILE_READ);
+    if (folder.isDirectory()) {
+        auto file = folder.openNextFile(FILE_READ);
+    }
+
+    return output;
 }
